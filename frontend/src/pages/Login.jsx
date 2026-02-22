@@ -10,8 +10,21 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
+        // Simulate API call and store mock user details
         setTimeout(() => {
+            const mockUser = {
+                name: 'Gordon Ramsay',
+                email: formData.email,
+                age: 45,
+                dob: '1979-05-12',
+                favoriteDish: 'Beef Wellington',
+                extras: 'Loves fresh ingredients and spicy curries'
+            };
+            localStorage.setItem('chilli_user', JSON.stringify(mockUser));
+
+            // Dispatch a custom event to notify Navbar of auth change
+            window.dispatchEvent(new Event('authStatusChanged'));
+
             setIsLoading(false);
             navigate('/');
         }, 1500);

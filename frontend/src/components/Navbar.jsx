@@ -7,15 +7,27 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [user, setUser] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
 
     React.useEffect(() => {
+        const checkUser = () => {
+            const stored = localStorage.getItem('chilli_user');
+            if (stored) setUser(JSON.parse(stored));
+            else setUser(null);
+        };
+        checkUser();
+        window.addEventListener('authStatusChanged', checkUser);
+
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('authStatusChanged', checkUser);
+        };
     }, []);
 
     const navLinks = [
@@ -104,13 +116,23 @@ const Navbar = () => {
                                     <Search className="w-5 h-5" />
                                 </button>
                             )}
-                            <Link
-                                to="/login"
-                                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 hover:text-primary-500 transition-all text-sm font-medium"
-                            >
-                                <User className="w-4 h-4" />
-                                Sign In
-                            </Link>
+                            {user ? (
+                                <Link
+                                    to="/profile"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 bg-primary-50 text-primary-600 transition-all text-sm font-bold shadow-sm"
+                                >
+                                    <User className="w-4 h-4" />
+                                    {user.name.split(' ')[0]}
+                                </Link>
+                            ) : (
+                                <Link
+                                    to="/login"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 hover:text-primary-500 transition-all text-sm font-medium"
+                                >
+                                    <User className="w-4 h-4" />
+                                    Sign In
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -143,13 +165,24 @@ const Navbar = () => {
                         </Link>
                     ))}
                     <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
-                        <Link
-                            to="/login"
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-colors"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Sign In
-                        </Link>
+                        {user ? (
+                            <Link
+                                to="/profile"
+                                className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                <User className="w-4 h-4" />
+                                View Profile
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Sign In
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

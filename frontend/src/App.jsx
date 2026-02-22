@@ -11,6 +11,7 @@ import ChilliAI from './pages/ChilliAI';
 import Favourites from './pages/Favourites';
 import Admin from './pages/Admin';
 import Categories from './pages/Categories';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/chilli-ai" element={<ChilliAI />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/profile" element={<Profile />} />
             {/* Additional routes will map here */}
           </Routes>
         </main>
