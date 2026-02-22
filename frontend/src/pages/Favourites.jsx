@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Clock, Flame, Trash2, ArrowRight } from 'lucide-react';
-import { recipes } from '../data/mockRecipes';
 
 const Favourites = () => {
-    // Mock favourites for demonstration
-    const favouriteRecipes = recipes.slice(0, 2);
+    const [favouriteRecipes, setFavouriteRecipes] = useState([]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        const stored = localStorage.getItem('chilli_favourites');
+        if (stored) {
+            setFavouriteRecipes(JSON.parse(stored));
+        }
+    }, []);
+
+    const removeFavourite = (id) => {
+        const newFavs = favouriteRecipes.filter(r => r.id !== id);
+        setFavouriteRecipes(newFavs);
+        localStorage.setItem('chilli_favourites', JSON.stringify(newFavs));
+    };
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+        <div className="min-h-screen pt-24 pb-12 relative z-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header */}
@@ -27,11 +39,17 @@ const Favourites = () => {
                         {favouriteRecipes.map((recipe, index) => (
                             <div
                                 key={recipe.id}
-                                className="group bg-white rounded-3xl pb-2 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative animate-slide-up"
+                                className="group liquid-card pb-2 relative animate-slide-up"
                                 style={{ animationDelay: `${0.1 * index}s` }}
                             >
                                 {/* Remove Button */}
-                                <button className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full text-rose-500 hover:text-white hover:bg-rose-500 transition-colors shadow-sm opacity-0 group-hover:opacity-100 duration-300">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        removeFavourite(recipe.id);
+                                    }}
+                                    className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-md rounded-full text-rose-500 hover:text-white hover:bg-rose-500 transition-colors shadow-sm opacity-0 group-hover:opacity-100 duration-300"
+                                >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
 
@@ -78,17 +96,17 @@ const Favourites = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100 animate-fade-in">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-50 mb-6">
-                            <Heart className="w-10 h-10 text-rose-300" />
+                    <div className="text-center py-20 liquid-card animate-fade-in border-white/40">
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-500/20 mb-6">
+                            <Heart className="w-10 h-10 text-rose-500" />
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-2">No favourites yet</h3>
-                        <p className="text-gray-500 max-w-md mx-auto mb-8">
+                        <p className="text-gray-700 max-w-md mx-auto mb-8 font-medium">
                             Start exploring recipes and click the heart icon to save them here for quick access later.
                         </p>
                         <Link
                             to="/recipes"
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 hover:-translate-y-1 transition-all"
+                            className="liquid-button inline-flex items-center gap-2 px-8 py-4 w-auto mx-auto"
                         >
                             Explore Recipes <ArrowRight className="w-5 h-5" />
                         </Link>

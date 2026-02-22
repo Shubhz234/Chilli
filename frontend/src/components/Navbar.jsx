@@ -30,12 +30,16 @@ const Navbar = () => {
         };
     }, []);
 
-    const navLinks = [
+    const baseNavLinks = [
         { name: 'Home', path: '/' },
         { name: 'Recipes', path: '/recipes' },
         { name: 'Categories', path: '/categories' },
         { name: 'Favourites', path: '/favourites' },
     ];
+
+    const navLinks = user?.isAdmin
+        ? [...baseNavLinks, { name: 'Admin Panel', path: '/admin' }]
+        : baseNavLinks;
 
     return (
         <nav

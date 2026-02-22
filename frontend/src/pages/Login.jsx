@@ -12,14 +12,29 @@ const Login = () => {
         setIsLoading(true);
         // Simulate API call and store mock user details
         setTimeout(() => {
-            const mockUser = {
-                name: 'Gordon Ramsay',
-                email: formData.email,
-                age: 45,
-                dob: '1979-05-12',
-                favoriteDish: 'Beef Wellington',
-                extras: 'Loves fresh ingredients and spicy curries'
-            };
+            let mockUser;
+            if (formData.email === 'Shubhammore2244@gmail.com' && formData.password === '121233434') {
+                mockUser = {
+                    name: 'Shubham',
+                    email: formData.email,
+                    age: 26,
+                    dob: '1998-01-01',
+                    favoriteDish: 'Paneer Butter Masala',
+                    extras: 'Platform Administrator',
+                    isAdmin: true
+                };
+            } else {
+                mockUser = {
+                    name: 'Gordon Ramsay',
+                    email: formData.email,
+                    age: 45,
+                    dob: '1979-05-12',
+                    favoriteDish: 'Beef Wellington',
+                    extras: 'Loves fresh ingredients and spicy curries',
+                    isAdmin: false
+                };
+            }
+
             localStorage.setItem('chilli_user', JSON.stringify(mockUser));
 
             // Dispatch a custom event to notify Navbar of auth change

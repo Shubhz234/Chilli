@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat } from 'lucide-react';
-import { recipes } from '../data/mockRecipes';
+import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const RecipeDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [recipes] = useState(() => {
+        const saved = localStorage.getItem('chilli_recipes');
+        return saved ? JSON.parse(saved) : initialRecipes;
+    });
     const recipe = recipes.find(r => r.id === id);
 
     const [isFavourite, setIsFavourite] = useState(false);
@@ -70,7 +75,7 @@ const RecipeDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="min-h-screen pb-20 relative z-0">
             {/* Hero Header */}
             <div className="relative h-96 w-full lg:h-[500px]">
                 <img
@@ -165,7 +170,7 @@ const RecipeDetail = () => {
 
                         {/* Video Section */}
                         {recipe.videoUrl && (
-                            <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+                            <section className="liquid-card p-6">
                                 <div className="flex items-center gap-2 mb-6">
                                     <PlayCircle className="w-6 h-6 text-primary-500" />
                                     <h2 className="text-2xl font-bold text-gray-900">Watch & Learn</h2>
@@ -186,7 +191,7 @@ const RecipeDetail = () => {
                         )}
 
                         {/* Instructions Section */}
-                        <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                        <section className="liquid-card p-8">
                             <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
                                 <ChefHat className="w-6 h-6 text-primary-500" />
                                 Instructions
@@ -213,7 +218,7 @@ const RecipeDetail = () => {
 
                     {/* Sidebar: Ingredients */}
                     <div className="lg:col-span-1 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                        <div className="sticky top-24 bg-white rounded-3xl p-8 shadow-xl shadow-primary-500/5 border border-primary-100/50">
+                        <div className="sticky top-24 liquid-card p-8">
                             <h3 className="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100 flex items-center justify-between">
                                 Ingredients
                                 <span className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full">

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, Clock, Flame, Star, Filter } from 'lucide-react';
-import { recipes } from '../data/mockRecipes';
+import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const Recipes = () => {
     const location = useLocation();
+    const [recipes] = useState(() => {
+        const saved = localStorage.getItem('chilli_recipes');
+        return saved ? JSON.parse(saved) : initialRecipes;
+    });
     const [searchTerm, setSearchTerm] = useState(location.state?.searchTerm || '');
     const [activeCategory, setActiveCategory] = useState(location.state?.category || 'All');
 
@@ -27,7 +31,7 @@ const Recipes = () => {
     });
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+        <div className="min-h-screen pt-24 pb-12 relative z-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header & Search */}
@@ -44,12 +48,12 @@ const Recipes = () => {
                             <input
                                 type="text"
                                 placeholder="Search by recipe name or ingredient (e.g. paneer, tomato...)"
-                                className="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-primary-500 transition-all font-medium text-gray-700 bg-white"
+                                className="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-primary-500 transition-all font-medium text-gray-800 bg-white/70 backdrop-blur-md"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button className="flex items-center justify-center gap-2 px-6 py-4 bg-white rounded-2xl shadow-sm text-gray-700 hover:text-primary-600 hover:bg-gray-50 transition-colors font-medium">
+                        <button className="flex items-center justify-center gap-2 px-6 py-4 glass-panel rounded-2xl text-gray-900 hover:text-primary-700 transition-colors font-bold">
                             <Filter className="w-5 h-5" />
                             Filters
                         </button>
@@ -63,8 +67,8 @@ const Recipes = () => {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`px-6 py-2.5 rounded-full font-medium whitespace-nowrap transition-all ${activeCategory === cat
-                                ? 'bg-primary-500 text-white shadow-md shadow-primary-500/30'
-                                : 'bg-white text-gray-600 hover:bg-gray-100 hover:text-primary-600'
+                                ? 'liquid-button'
+                                : 'glass-panel text-gray-800 hover:text-primary-600 font-semibold'
                                 }`}
                         >
                             {cat}
@@ -79,7 +83,7 @@ const Recipes = () => {
                             to={`/recipe/${recipe.id}`}
                             state={{ fromSearch: true }}
                             key={recipe.id}
-                            className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block animate-slide-up"
+                            className="group liquid-card block animate-slide-up"
                             style={{ animationDelay: `${0.1 * (index + 2)}s` }}
                         >
                             {/* Image Container */}

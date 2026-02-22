@@ -16,15 +16,12 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen flex flex-col relative z-0">
+            {/* Darker floating liquid blobs */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-rose-400/20 rounded-full blur-3xl -z-10 animate-blob"></div>
+            <div className="absolute bottom-40 left-10 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl -z-10 animate-blob animation-delay-2000"></div>
             {/* Hero Section */}
             <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
-                {/* Background Decorative Elements */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-                    <div className="absolute top-20 -left-20 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-                    <div className="absolute -bottom-20 left-1/2 w-80 h-80 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
-                </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <div className="text-center max-w-4xl mx-auto">
@@ -43,19 +40,19 @@ const Home = () => {
                         </p>
 
                         {/* Global Search Bar */}
-                        <div className="max-w-2xl mx-auto bg-white p-2 rounded-2xl shadow-xl shadow-primary-500/5 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+                        <div className="max-w-2xl mx-auto glass-panel p-3 rounded-3xl animate-slide-up" style={{ animationDelay: '0.3s' }}>
                             <form className="flex items-center gap-2" onSubmit={handleSearch}>
-                                <div className="flex-1 flex items-center px-4 bg-gray-50 rounded-xl border border-transparent focus-within:border-primary-100 focus-within:bg-white transition-all">
-                                    <Search className="w-5 h-5 text-gray-400" />
+                                <div className="flex-1 flex items-center px-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 focus-within:border-primary-300 focus-within:bg-white/80 transition-all shadow-input">
+                                    <Search className="w-5 h-5 text-gray-500" />
                                     <input
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         placeholder='Try "Paneer Tikka" or "I have eggs and tomatoes..."'
-                                        className="w-full bg-transparent border-none py-4 px-3 focus:outline-none text-gray-700 placeholder-gray-400"
+                                        className="w-full bg-transparent border-none py-4 px-3 focus:outline-none text-gray-900 placeholder-gray-500 font-medium"
                                     />
                                 </div>
-                                <button type="submit" className="bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-xl font-semibold transition-all shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 flex items-center gap-2">
+                                <button type="submit" className="liquid-button px-8 py-4">
                                     Search
                                 </button>
                             </form>
@@ -65,12 +62,12 @@ const Home = () => {
             </section>
 
             {/* Featured AI Section */}
-            <section className="py-20 bg-white">
+            <section className="py-20 bg-transparent">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-2 gap-16 items-center">
                         <div className="order-2 md:order-1 relative">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary-100 to-orange-50 rounded-3xl transform -rotate-3 scale-105 -z-10"></div>
-                            <div className="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary-200 to-orange-200 rounded-3xl transform -rotate-3 scale-105 blur-lg -z-10 opacity-60"></div>
+                            <div className="liquid-card p-8 relative">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-orange-400"></div>
                                 <div className="flex items-start gap-4 mb-6">
                                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -112,8 +109,8 @@ const Home = () => {
                                     </li>
                                 ))}
                             </ul>
-                            <Link to="/chilli-ai" className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform duration-200">
-                                Chat with Chilli <ArrowRight className="w-4 h-4" />
+                            <Link to="/chilli-ai" className="liquid-button inline-flex items-center justify-center gap-2 px-8 py-4 w-auto">
+                                Chat with Chilli <ArrowRight className="w-5 h-5" />
                             </Link>
                         </div>
                     </div>
