@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChefHat, Mail, Lock, ArrowRight } from 'lucide-react';
+import { ChefHat, Mail, Lock, ArrowRight, User } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
+    const [showNewUserPopup, setShowNewUserPopup] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,7 +25,11 @@ const Login = () => {
                 navigate('/');
             } else {
                 const errorData = await res.json();
-                alert(errorData.message || 'Login failed');
+                if (res.status === 404 && errorData.code === 'USER_NOT_FOUND') {
+                    setShowNewUserPopup(true);
+                } else {
+                    alert(errorData.message || 'Login failed');
+                }
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -143,6 +148,37 @@ const Login = () => {
                     </div>
                 </div>
             </div>
+
+            {/* New User Not Found Popup */}
+            {showNewUserPopup && (
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in px-4">
+                    <div className="liquid-card p-8 max-w-sm w-full scale-100 transform transition-transform border border-white/40">
+                        <div className="mb-6 text-center">
+                            <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <User className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Account Not Found</h3>
+                            <p className="text-gray-600">
+                                It looks like there isn't an account registered with that email. Would you like to create a new one?
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="w-full py-3 text-white bg-primary-600 hover:bg-primary-500 rounded-xl font-semibold transition-colors shadow-lg shadow-primary-500/30"
+                            >
+                                Create New Account
+                            </button>
+                            <button
+                                onClick={() => setShowNewUserPopup(false)}
+                                className="w-full py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-semibold transition-colors"
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

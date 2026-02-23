@@ -35,7 +35,7 @@ const Recipes = () => {
         }
     }, [location.state]);
 
-    const categories = ['All', 'Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Quick & Easy', 'Vegan', 'Seafood'];
+    const categories = ['All', 'Indian', 'Italian', 'Chinese', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Seafood', 'Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Vegan', 'Quick & Easy'];
 
     const filteredRecipes = recipes.filter(recipe => {
         const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

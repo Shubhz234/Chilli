@@ -35,6 +35,7 @@ const Navbar = () => {
         { name: 'Recipes', path: '/recipes' },
         { name: 'Categories', path: '/categories' },
         { name: 'Favourites', path: '/favourites' },
+        { name: 'Chilli AI', path: '/chilli-ai' },
     ];
 
     const navLinks = user?.isAdmin
@@ -43,9 +44,9 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed w-full z-50 transition-all duration-300 ${isScrolled
-                ? 'glass-panel py-3'
-                : 'bg-transparent py-5'
+            className={`fixed w-full z-[100] transition-all duration-300 ${isScrolled
+                ? 'bg-white/95 backdrop-blur-xl shadow-md py-3 border-b border-gray-100'
+                : 'bg-white/80 backdrop-blur-md shadow-sm py-4 border-b border-gray-100'
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,12 +68,19 @@ const Navbar = () => {
                                 <Link
                                     key={link.name}
                                     to={link.path}
-                                    className={`text-sm font-medium transition-colors hover:text-primary-500 ${location.pathname === link.path
-                                        ? 'text-primary-500'
-                                        : 'text-gray-600 dark:text-gray-300'
+                                    className={`text-sm font-bold transition-all relative group ${location.pathname === link.path
+                                        ? 'text-primary-600'
+                                        : 'text-gray-600 hover:text-primary-500'
                                         }`}
                                 >
+                                    {link.name === 'Chilli AI' && (
+                                        <span className="absolute -top-3 -right-4 flex h-4 w-4">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-4 w-4 bg-gradient-to-tr from-orange-400 to-red-500"></span>
+                                        </span>
+                                    )}
                                     {link.name}
+                                    <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary-500 transition-all duration-300 ${location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                 </Link>
                             ))}
                         </div>
@@ -162,10 +170,21 @@ const Navbar = () => {
                         <Link
                             key={link.name}
                             to={link.path}
-                            className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-primary-50"
+                            className={`block px-4 py-3 rounded-xl text-base font-bold transition-colors ${location.pathname === link.path
+                                ? 'bg-primary-50 text-primary-600'
+                                : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                                }`}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
-                            {link.name}
+                            <div className="flex items-center justify-between">
+                                {link.name}
+                                {link.name === 'Chilli AI' && (
+                                    <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-gradient-to-tr from-orange-400 to-red-500 text-white rounded-full flex items-center gap-1 shadow-sm">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                        NEW
+                                    </span>
+                                )}
+                            </div>
                         </Link>
                     ))}
                     <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">

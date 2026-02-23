@@ -3,6 +3,14 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
+// Helper to convert standard YouTube links into embeddable iframe links
+const getEmbedUrl = (url) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : url;
+};
+
 const RecipeDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -122,16 +130,16 @@ const RecipeDetail = () => {
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 md:pb-32">
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                             <div className="max-w-3xl animate-slide-up">
                                 <span className="inline-block px-3 py-1 bg-primary-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg mb-4">
                                     {recipe.category}
                                 </span>
-                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4">
+                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
                                     {recipe.title}
                                 </h1>
-                                <p className="text-lg text-gray-300 max-w-2xl leading-relaxed">
+                                <p className="text-lg text-gray-300 max-w-2xl leading-relaxed line-clamp-3 sm:line-clamp-4">
                                     {recipe.description}
                                 </p>
                             </div>
@@ -186,14 +194,14 @@ const RecipeDetail = () => {
                         <User className="w-6 h-6 text-purple-400" />
                         <div>
                             <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Servings</p>
-                            <p className="font-bold text-lg">4 People</p>
+                            <p className="font-bold text-lg">{recipe.servings || 4} People</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-12">
+                <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:gap-12">
                     {/* Main Content: Steps and Video */}
-                    <div className="lg:col-span-2 space-y-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="lg:col-span-2 space-y-8 lg:space-y-12 order-2 lg:order-1 animate-slide-up" style={{ animationDelay: '0.2s' }}>
 
                         {/* Video Section */}
                         {recipe.videoUrl && (
@@ -206,7 +214,7 @@ const RecipeDetail = () => {
                                     <iframe
                                         width="100%"
                                         height="100%"
-                                        src={recipe.videoUrl}
+                                        src={getEmbedUrl(recipe.videoUrl)}
                                         title="YouTube video player"
                                         frameBorder="0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -244,7 +252,7 @@ const RecipeDetail = () => {
                     </div>
 
                     {/* Sidebar: Ingredients */}
-                    <div className="lg:col-span-1 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+                    <div className="lg:col-span-1 order-1 lg:order-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
                         <div className="sticky top-24 liquid-card p-8">
                             <h3 className="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100 flex items-center justify-between">
                                 Ingredients

@@ -48,7 +48,7 @@ export const loginUser = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(404).json({ message: 'User not found. Please create an account.', code: 'USER_NOT_FOUND' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -67,5 +67,48 @@ export const loginUser = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error logging in', error: error.message });
+    }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/users/profile/:id
+// @access  Public
+export const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            user.name = req.body.name || user.name;
+            user.age = req.body.age || user.age;
+            user.dob = req.body.dob || user.dob;
+            user.favoriteDish = req.body.favoriteDish || user.favoriteDish;
+            user.spiceLevel = req.body.spiceLevel || user.spiceLevel;
+            user.favoriteCuisine = req.body.favoriteCuisine || user.favoriteCuisine;
+            user.dietaryPreference = req.body.dietaryPreference || user.dietaryPreference;
+            user.allergies = req.body.allergies || user.allergies;
+            user.extras = req.body.extras || user.extras;
+
+            const updatedUser = await user.save();
+
+            res.json({
+                id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                isAdmin: updatedUser.isAdmin,
+                age: updatedUser.age,
+                dob: updatedUser.dob,
+                favoriteDish: updatedUser.favoriteDish,
+                spiceLevel: updatedUser.spiceLevel,
+                favoriteCuisine: updatedUser.favoriteCuisine,
+                dietaryPreference: updatedUser.dietaryPreference,
+                allergies: updatedUser.allergies,
+                extras: updatedUser.extras,
+                token: req.body.token // send back existing token
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error updating profile', error: error.message });
     }
 };

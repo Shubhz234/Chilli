@@ -14,7 +14,7 @@ const Admin = () => {
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, payload: null });
 
     const [formData, setFormData] = useState({
-        id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '',
+        id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '',
         description: '', ingredients: '', steps: ''
     });
 
@@ -59,6 +59,7 @@ const Admin = () => {
             title: formData.title,
             category: formData.category,
             difficulty: formData.difficulty,
+            servings: Number(formData.servings) || 4,
             time: formData.time.includes('mins') ? formData.time : formData.time + ' mins',
             image: formData.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
             videoUrl: formData.videoUrl,
@@ -103,7 +104,7 @@ const Admin = () => {
         }
 
         setShowForm(false);
-        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
     };
 
     const handleEdit = (recipe) => {
@@ -132,6 +133,7 @@ const Admin = () => {
                 category: recipe.category,
                 time: recipe.time.replace(' mins', ''),
                 difficulty: recipe.difficulty || 'Medium',
+                servings: recipe.servings || 4,
                 image: recipe.image,
                 videoUrl: recipe.videoUrl || '',
                 description: recipe.description,
@@ -164,7 +166,7 @@ const Admin = () => {
                         onClick={() => {
                             if (showForm) {
                                 setShowForm(false);
-                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                             } else {
                                 setShowForm(true);
                             }
@@ -202,7 +204,7 @@ const Admin = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
                                         <select
@@ -210,9 +212,21 @@ const Admin = () => {
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
                                         >
-                                            {['Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Quick & Easy', 'Vegan', 'Seafood'].map(c => (
-                                                <option key={c} value={c}>{c}</option>
-                                            ))}
+                                            <optgroup label="Cuisine / Region">
+                                                {['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean'].map(c => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                ))}
+                                            </optgroup>
+                                            <optgroup label="Meal Type">
+                                                {['Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Seafood'].map(c => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                ))}
+                                            </optgroup>
+                                            <optgroup label="Diet & Health">
+                                                {['Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Vegan', 'Quick & Easy'].map(c => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                ))}
+                                            </optgroup>
                                         </select>
                                     </div>
                                     <div>
@@ -236,6 +250,18 @@ const Admin = () => {
                                             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
                                             placeholder="e.g. 45"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Servings</label>
+                                        <input
+                                            type="number"
+                                            required
+                                            min="1"
+                                            value={formData.servings}
+                                            onChange={(e) => setFormData({ ...formData, servings: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
+                                            placeholder="e.g. 4"
                                         />
                                     </div>
                                 </div>
@@ -306,7 +332,7 @@ const Admin = () => {
                                     type="button"
                                     onClick={() => {
                                         setShowForm(false);
-                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                                     }}
                                     className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                                 >

@@ -27,11 +27,28 @@ const Profile = () => {
         navigate('/');
     };
 
-    const handleSave = () => {
-        localStorage.setItem('chilli_user', JSON.stringify(editData));
-        setUser(editData);
-        setIsEditing(false);
-        window.dispatchEvent(new Event('authStatusChanged'));
+    const handleSave = async () => {
+        try {
+            const res = await fetch(`http://localhost:5000/api/users/profile/${user.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...editData, token: user.token })
+            });
+
+            if (res.ok) {
+                const updatedUser = await res.json();
+                localStorage.setItem('chilli_user', JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                setIsEditing(false);
+                window.dispatchEvent(new Event('authStatusChanged'));
+            } else {
+                const errorData = await res.json();
+                alert(errorData.message || 'Failed to update profile');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('An error occurred while saving.');
+        }
     };
 
     const handleChange = (e) => {
@@ -155,13 +172,50 @@ const Profile = () => {
                                 <input
                                     type="text"
                                     name="favoriteDish"
-                                    value={editData.favoriteDish}
+                                    value={editData.favoriteDish || ''}
                                     onChange={handleChange}
+                                    placeholder="e.g. Butter Chicken"
                                     className="text-xl font-extrabold text-gray-900 w-full bg-white border border-primary-200 rounded p-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 />
                             ) : (
-                                <p className="text-xl font-extrabold text-gray-900">{user.favoriteDish}</p>
+                                <p className="text-xl font-extrabold text-gray-900">{user.favoriteDish || 'Not set'}</p>
                             )}
+
+                            <div className="grid grid-cols-2 gap-4 mt-6 border-t border-primary-200/50 pt-4">
+                                <div>
+                                    <p className="text-xs text-primary-600/80 uppercase font-bold mb-1 border-b border-primary-200 pb-1">Spice Level</p>
+                                    {isEditing ? (
+                                        <select
+                                            name="spiceLevel"
+                                            value={editData.spiceLevel || 'Medium'}
+                                            onChange={handleChange}
+                                            className="w-full bg-white border border-primary-200 rounded p-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        >
+                                            <option value="Mild">Mild</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="Spicy">Spicy</option>
+                                            <option value="Extra Spicy">Extra Spicy</option>
+                                        </select>
+                                    ) : (
+                                        <p className="font-semibold text-gray-800">{user.spiceLevel || 'Medium'}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-xs text-primary-600/80 uppercase font-bold mb-1 border-b border-primary-200 pb-1">Fav Cuisine</p>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            name="favoriteCuisine"
+                                            value={editData.favoriteCuisine || ''}
+                                            onChange={handleChange}
+                                            placeholder="e.g. Italian"
+                                            className="w-full bg-white border border-primary-200 rounded p-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        />
+                                    ) : (
+                                        <p className="font-semibold text-gray-800">{user.favoriteCuisine || 'Not set'}</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -169,20 +223,61 @@ const Profile = () => {
                     <div className="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 flex flex-col gap-6">
                         <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900 border-b border-gray-100 pb-4">
                             <Heart className="w-6 h-6 text-rose-500" />
-                            Preferences & Extras
+                            Preferences & Health
                         </h2>
 
-                        <div className="flex-1 bg-gray-50 rounded-xl p-6 border-l-4 border-primary-300">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
+                                <p className="text-xs text-rose-500 uppercase font-bold mb-2">Dietary Preference</p>
+                                {isEditing ? (
+                                    <select
+                                        name="dietaryPreference"
+                                        value={editData.dietaryPreference || 'None'}
+                                        onChange={handleChange}
+                                        className="w-full bg-white border border-rose-200 rounded p-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                                    >
+                                        <option value="None">None</option>
+                                        <option value="Vegetarian">Vegetarian</option>
+                                        <option value="Vegan">Vegan</option>
+                                        <option value="Pescatarian">Pescatarian</option>
+                                        <option value="Keto">Keto</option>
+                                        <option value="Paleo">Paleo</option>
+                                        <option value="Gluten-Free">Gluten-Free</option>
+                                    </select>
+                                ) : (
+                                    <p className="font-semibold text-gray-900">{user.dietaryPreference || 'None'}</p>
+                                )}
+                            </div>
+                            <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
+                                <p className="text-xs text-rose-500 uppercase font-bold mb-2">Allergies</p>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        name="allergies"
+                                        value={editData.allergies || ''}
+                                        onChange={handleChange}
+                                        placeholder="e.g. Peanuts, Dairy"
+                                        className="w-full bg-white border border-rose-200 rounded p-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
+                                    />
+                                ) : (
+                                    <p className="font-semibold text-gray-900">{user.allergies || 'None'}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex-1 bg-gray-50 rounded-xl p-6 border-l-4 border-rose-300">
+                            <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Additional Notes / Extras</p>
                             {isEditing ? (
                                 <textarea
                                     name="extras"
-                                    value={editData.extras}
+                                    value={editData.extras || ''}
                                     onChange={handleChange}
-                                    rows={4}
-                                    className="w-full bg-white border border-gray-200 rounded p-2 text-gray-700 leading-relaxed italic focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                                    rows={3}
+                                    placeholder="Any other preferences or notes..."
+                                    className="w-full bg-white border border-gray-200 rounded p-2 text-gray-700 leading-relaxed italic focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
                                 />
                             ) : (
-                                <p className="text-gray-700 leading-relaxed italic">"{user.extras}"</p>
+                                <p className="text-gray-700 leading-relaxed italic">{user.extras ? `"${user.extras}"` : 'No additional notes provided.'}</p>
                             )}
                         </div>
                     </div>

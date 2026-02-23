@@ -37,13 +37,14 @@ export const getRecipeById = async (req, res) => {
 // @access  Private/Admin (Will add auth middleware later)
 export const createRecipe = async (req, res) => {
     try {
-        const { title, category, time, difficulty, image, videoUrl, description, ingredients, steps } = req.body;
+        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps } = req.body;
 
         const recipe = new Recipe({
             title,
             category,
             time,
             difficulty: difficulty || 'Medium',
+            servings: servings || 4,
             image: image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
             videoUrl,
             description,
@@ -67,7 +68,7 @@ export const updateRecipe = async (req, res) => {
             return res.status(404).json({ message: 'Recipe not found' });
         }
 
-        const { title, category, time, difficulty, image, videoUrl, description, ingredients, steps } = req.body;
+        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps } = req.body;
 
         const recipe = await Recipe.findById(req.params.id);
 
@@ -76,6 +77,7 @@ export const updateRecipe = async (req, res) => {
             recipe.category = category || recipe.category;
             recipe.time = time || recipe.time;
             recipe.difficulty = difficulty || recipe.difficulty;
+            recipe.servings = servings || recipe.servings || 4;
             recipe.image = image || recipe.image;
             recipe.videoUrl = videoUrl || recipe.videoUrl;
             recipe.description = description || recipe.description;

@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema({
     age: { type: Number },
     dob: { type: String },
     favoriteDish: { type: String },
+    spiceLevel: { type: String, default: 'Medium' },
+    favoriteCuisine: { type: String },
+    dietaryPreference: { type: String },
+    allergies: { type: String },
     extras: { type: String },
     isAdmin: { type: Boolean, default: false }
 }, {
