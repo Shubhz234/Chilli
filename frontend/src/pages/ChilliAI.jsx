@@ -31,7 +31,7 @@ const ChilliAI = () => {
             if (storedUser) {
                 const userId = JSON.parse(storedUser).id;
                 try {
-                    const res = await fetch(`http://localhost:5000/api/ai/history/${userId}`);
+                    const res = await fetch(`/api/ai/history/${userId}`);
                     if (res.ok) {
                         const data = await res.json();
                         setHistory(data.reverse());
@@ -86,7 +86,7 @@ const ChilliAI = () => {
     const deleteChat = async (e, chatId) => {
         e.stopPropagation();
         try {
-            const res = await fetch(`http://localhost:5000/api/ai/history/${chatId}`, {
+            const res = await fetch(`/api/ai/history/${chatId}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -120,7 +120,7 @@ const ChilliAI = () => {
         const userId = storedUser ? JSON.parse(storedUser).id : null;
 
         try {
-            const res = await fetch('http://localhost:5000/api/ai/chat', {
+            const res = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg.text, userId, chatId: activeChatId })

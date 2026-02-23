@@ -24,7 +24,7 @@ const Admin = () => {
         // Fetch fresh recipes from the database
         const fetchRecipes = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/recipes');
+                const res = await fetch('/api/recipes');
                 const data = await res.json();
                 setRecipes(data);
                 localStorage.setItem('chilli_recipes', JSON.stringify(data));
@@ -71,7 +71,7 @@ const Admin = () => {
         if (formData.id) {
             // Edit
             try {
-                const res = await fetch(`http://localhost:5000/api/recipes/${formData.id}`, {
+                const res = await fetch(`/api/recipes/${formData.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(recipePayload)
@@ -88,7 +88,7 @@ const Admin = () => {
         } else {
             // Add
             try {
-                const res = await fetch('http://localhost:5000/api/recipes', {
+                const res = await fetch('/api/recipes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(recipePayload)
@@ -122,7 +122,7 @@ const Admin = () => {
     const executeConfirmAction = async () => {
         if (confirmModal.type === 'delete') {
             try {
-                await fetch(`http://localhost:5000/api/recipes/${confirmModal.payload}`, {
+                await fetch(`/api/recipes/${confirmModal.payload}`, {
                     method: 'DELETE'
                 });
                 saveAndSync(recipes.filter(r => r.id !== confirmModal.payload));
@@ -148,7 +148,7 @@ const Admin = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (confirmModal.type === 'reset_ratings') {
             try {
-                const res = await fetch(`http://localhost:5000/api/recipes/${confirmModal.payload}/reviews`, {
+                const res = await fetch(`/api/recipes/${confirmModal.payload}/reviews`, {
                     method: 'DELETE'
                 });
                 if (res.ok) {

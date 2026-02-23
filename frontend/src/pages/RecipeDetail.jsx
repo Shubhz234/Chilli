@@ -44,7 +44,7 @@ const RecipeDetail = () => {
         }
 
         try {
-            const res = await fetch(`http://localhost:5000/api/recipes/${recipe.id}/reviews`, {
+            const res = await fetch(`/api/recipes/${recipe.id}/reviews`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -74,7 +74,7 @@ const RecipeDetail = () => {
 
         const fetchRecipe = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/api/recipes/${id}`);
+                const res = await fetch(`/api/recipes/${id}`);
                 if (res.ok) {
                     const data = await res.json();
                     setRecipe({ ...data, id: data._id.toString() });
@@ -321,8 +321,8 @@ const RecipeDetail = () => {
                                         >
                                             <Star
                                                 className={`w-8 h-8 transition-colors ${star <= (hoverRating || rating)
-                                                        ? 'text-orange-400 fill-orange-400'
-                                                        : 'text-gray-300'
+                                                    ? 'text-orange-400 fill-orange-400'
+                                                    : 'text-gray-300'
                                                     }`}
                                             />
                                         </button>

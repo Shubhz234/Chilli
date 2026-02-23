@@ -15,7 +15,7 @@ const Recipes = () => {
     useEffect(() => {
         const fetchRecipes = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/recipes');
+                const res = await fetch('/api/recipes');
                 if (res.ok) {
                     const data = await res.json();
                     setRecipes(data);

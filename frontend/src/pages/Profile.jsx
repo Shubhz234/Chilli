@@ -29,7 +29,7 @@ const Profile = () => {
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/users/profile/${user.id}`, {
+            const res = await fetch(`/api/users/profile/${user.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...editData, token: user.token })
