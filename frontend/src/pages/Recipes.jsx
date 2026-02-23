@@ -109,7 +109,7 @@ const Recipes = () => {
                                 />
                                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
                                     <Star className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
-                                    <span className="text-xs font-bold text-gray-800">{recipe.rating}</span>
+                                    <span className="text-xs font-bold text-gray-800">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
                                 </div>
                                 {/* Save Button overlay */}
                                 <div className="absolute top-4 left-4 p-2 bg-white/40 backdrop-blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white text-gray-800 hover:text-primary-500">

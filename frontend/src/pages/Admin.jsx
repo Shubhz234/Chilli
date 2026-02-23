@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Search, ChefHat, ExternalLink } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ChefHat, ExternalLink, Star, RotateCcw } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const Admin = () => {
@@ -115,6 +115,10 @@ const Admin = () => {
         setConfirmModal({ isOpen: true, type: 'delete', payload: id });
     };
 
+    const handleResetRatings = (id) => {
+        setConfirmModal({ isOpen: true, type: 'reset_ratings', payload: id });
+    };
+
     const executeConfirmAction = async () => {
         if (confirmModal.type === 'delete') {
             try {
@@ -142,6 +146,19 @@ const Admin = () => {
             });
             setShowForm(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (confirmModal.type === 'reset_ratings') {
+            try {
+                const res = await fetch(`http://localhost:5000/api/recipes/${confirmModal.payload}/reviews`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const formattedRecipe = { ...data.recipe, id: data.recipe._id.toString() };
+                    saveAndSync(recipes.map(r => r.id === confirmModal.payload ? formattedRecipe : r));
+                }
+            } catch (err) {
+                console.error("Reset ratings error", err);
+            }
         }
         setConfirmModal({ isOpen: false, type: null, payload: null });
     };
@@ -372,6 +389,7 @@ const Admin = () => {
                                 <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
                                     <th className="p-4 font-semibold">Recipe</th>
                                     <th className="p-4 font-semibold">Category</th>
+                                    <th className="p-4 font-semibold">Rating</th>
                                     <th className="p-4 font-semibold">Difficulty</th>
                                     <th className="p-4 font-semibold text-right">Actions</th>
                                 </tr>
@@ -394,6 +412,13 @@ const Admin = () => {
                                             </span>
                                         </td>
                                         <td className="p-4">
+                                            <div className="flex items-center gap-1.5 text-gray-700">
+                                                <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
+                                                <span className="font-bold">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
+                                                <span className="text-gray-400 text-xs">({recipe.numReviews || 0})</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
                                             <span className="text-sm font-medium text-gray-700">
                                                 {recipe.difficulty}
                                             </span>
@@ -405,6 +430,12 @@ const Admin = () => {
                                                     className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="View"
                                                 >
                                                     <ExternalLink className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleResetRatings(recipe.id)}
+                                                    className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Reset Ratings"
+                                                >
+                                                    <RotateCcw className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleEdit(recipe)}
@@ -444,9 +475,9 @@ const Admin = () => {
                         <div className="mb-6">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">Are you sure?</h3>
                             <p className="text-gray-600">
-                                {confirmModal.type === 'delete'
-                                    ? "This action cannot be undone. Are you sure you want to permanently delete this recipe?"
-                                    : "You are about to edit this recipe's details. Proceed?"}
+                                {confirmModal.type === 'delete' && "This action cannot be undone. Are you sure you want to permanently delete this recipe?"}
+                                {confirmModal.type === 'edit' && "You are about to edit this recipe's details. Proceed?"}
+                                {confirmModal.type === 'reset_ratings' && "Are you sure you want to reset and permanently delete ALL ratings and reviews for this recipe? This cannot be undone."}
                             </p>
                         </div>
                         <div className="flex gap-3 justify-end">
@@ -458,12 +489,14 @@ const Admin = () => {
                             </button>
                             <button
                                 onClick={executeConfirmAction}
-                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete'
+                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete' || confirmModal.type === 'reset_ratings'
                                     ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/30'
                                     : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
                                     }`}
                             >
-                                Yes, {confirmModal.type === 'delete' ? 'Delete' : 'Edit'}
+                                {confirmModal.type === 'delete' && 'Yes, Delete'}
+                                {confirmModal.type === 'reset_ratings' && 'Yes, Reset Ratings'}
+                                {confirmModal.type === 'edit' && 'Yes, Edit'}
                             </button>
                         </div>
                     </div>

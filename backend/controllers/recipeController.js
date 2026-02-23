@@ -115,3 +115,62 @@ export const deleteRecipe = async (req, res) => {
         res.status(500).json({ message: 'Server Error deleting recipe' });
     }
 };
+
+// @desc    Create new recipe review
+// @route   POST /api/recipes/:id/reviews
+// @access  Public (Expects user info in body)
+export const createRecipeReview = async (req, res) => {
+    try {
+        const { rating, comment, userId, userName } = req.body;
+        if (!userId) return res.status(400).json({ message: 'User ID is required' });
+
+        const recipe = await Recipe.findById(req.params.id);
+
+        if (recipe) {
+            const alreadyReviewed = recipe.reviews.find((r) => r.userId === userId);
+
+            if (alreadyReviewed) {
+                alreadyReviewed.rating = Number(rating);
+                alreadyReviewed.comment = comment;
+            } else {
+                const review = {
+                    name: userName || 'Anonymous',
+                    rating: Number(rating),
+                    comment,
+                    userId
+                };
+                recipe.reviews.push(review);
+            }
+
+            recipe.numReviews = recipe.reviews.length;
+            recipe.rating = recipe.reviews.reduce((acc, item) => item.rating + acc, 0) / recipe.reviews.length;
+
+            await recipe.save();
+            res.status(201).json({ message: 'Review added', recipe });
+        } else {
+            res.status(404).json({ message: 'Recipe not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error processing review', error: error.message });
+    }
+};
+
+// @desc    Admin reset ratings
+// @route   DELETE /api/recipes/:id/reviews
+// @access  Private/Admin
+export const resetRecipeRatings = async (req, res) => {
+    try {
+        const recipe = await Recipe.findById(req.params.id);
+        if (recipe) {
+            recipe.reviews = [];
+            recipe.numReviews = 0;
+            recipe.rating = 0;
+            await recipe.save();
+            res.json({ message: 'Ratings reset successfully', recipe });
+        } else {
+            res.status(404).json({ message: 'Recipe not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error resetting ratings', error: error.message });
+    }
+};

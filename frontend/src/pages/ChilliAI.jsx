@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChefHat, Send, Sparkles, User, Image as ImageIcon, Camera, Menu, Plus, MessageSquare } from 'lucide-react';
+import { ChefHat, Send, Sparkles, User, Image as ImageIcon, Camera, Menu, Plus, MessageSquare, Trash2 } from 'lucide-react';
 
 const ChilliAI = () => {
     const initialMessage = {
@@ -14,6 +14,7 @@ const ChilliAI = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     const [history, setHistory] = useState([]);
+    const [activeChatId, setActiveChatId] = useState(null);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -45,28 +46,57 @@ const ChilliAI = () => {
 
     const handleNewChat = () => {
         setMessages([initialMessage]);
+        setActiveChatId(null);
         if (window.innerWidth < 768) {
             setIsSidebarOpen(false);
         }
     };
 
     const loadChat = (chatItem) => {
-        setMessages([
-            {
-                id: Date.now(),
-                type: 'user',
-                text: chatItem.userInput,
-                timestamp: new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            },
-            {
-                id: Date.now() + 1,
-                type: 'ai',
-                text: chatItem.aiResponse,
-                timestamp: new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-        ]);
+        setActiveChatId(chatItem._id);
+        if (chatItem.messages && chatItem.messages.length > 0) {
+            setMessages(chatItem.messages.map((m, i) => ({
+                id: m._id || Date.now() + i,
+                type: m.type,
+                text: m.text,
+                timestamp: m.timestamp || new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            })));
+        } else {
+            // Graceful fallback for older single-prompt chat records
+            setMessages([
+                {
+                    id: Date.now(),
+                    type: 'user',
+                    text: chatItem.userInput,
+                    timestamp: new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                },
+                {
+                    id: Date.now() + 1,
+                    type: 'ai',
+                    text: chatItem.aiResponse,
+                    timestamp: new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }
+            ]);
+        }
         if (window.innerWidth < 768) {
             setIsSidebarOpen(false);
+        }
+    };
+
+    const deleteChat = async (e, chatId) => {
+        e.stopPropagation();
+        try {
+            const res = await fetch(`http://localhost:5000/api/ai/history/${chatId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                setHistory(prev => prev.filter(c => c._id !== chatId));
+                if (activeChatId === chatId) {
+                    handleNewChat();
+                }
+            }
+        } catch (err) {
+            console.error("Error deleting chat");
         }
     };
 
@@ -93,7 +123,7 @@ const ChilliAI = () => {
             const res = await fetch('http://localhost:5000/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg.text, userId })
+                body: JSON.stringify({ message: userMsg.text, userId, chatId: activeChatId })
             });
 
             if (res.ok) {
@@ -107,12 +137,26 @@ const ChilliAI = () => {
                 setMessages(prev => [...prev, aiMsg]);
 
                 if (data.chatId) {
-                    setHistory(prev => [{
-                        _id: data.chatId,
-                        userInput: userMsg.text,
-                        aiResponse: data.text,
-                        createdAt: new Date().toISOString()
-                    }, ...prev]);
+                    setActiveChatId(data.chatId);
+                    // Update history locally instead of full refetch to remain fast
+                    setHistory(prev => {
+                        const existingChat = prev.find(c => c._id === data.chatId);
+                        if (existingChat) {
+                            // Update existing Array
+                            return prev.map(c => c._id === data.chatId ? {
+                                ...c,
+                                messages: [...(c.messages || []), { type: 'user', text: userMsg.text }, { type: 'ai', text: data.text }]
+                            } : c);
+                        } else {
+                            // New Chat
+                            return [{
+                                _id: data.chatId,
+                                title: userMsg.text.substring(0, 30) + (userMsg.text.length > 30 ? '...' : ''),
+                                messages: [{ type: 'user', text: userMsg.text }, { type: 'ai', text: data.text }],
+                                createdAt: new Date().toISOString()
+                            }, ...prev];
+                        }
+                    });
                 }
             } else {
                 const errData = await res.json();
@@ -155,14 +199,25 @@ const ChilliAI = () => {
                         ) : (
                             <div className="space-y-1">
                                 {history.map((item) => (
-                                    <button
+                                    <div
                                         key={item._id}
+                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors text-left group cursor-pointer ${activeChatId === item._id ? 'bg-[#d3e3fd]' : 'hover:bg-[#e4e9f1]'}`}
                                         onClick={() => loadChat(item)}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[#e4e9f1] rounded-full transition-colors text-left group"
                                     >
-                                        <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                                        <p className="text-[13.5px] text-gray-700 truncate font-medium">{item.userInput}</p>
-                                    </button>
+                                        <div className="flex items-center gap-3 overflow-hidden flex-1">
+                                            <MessageSquare className={`w-4 h-4 flex-shrink-0 ${activeChatId === item._id ? 'text-primary-600' : 'text-gray-500'}`} />
+                                            <p className={`text-[13.5px] truncate font-medium ${activeChatId === item._id ? 'text-primary-800' : 'text-gray-700'}`}>
+                                                {item.title || item.userInput}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={(e) => deleteChat(e, item._id)}
+                                            className="ml-2 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-rose-100 text-rose-500 rounded-lg transition-all flex-shrink-0"
+                                            title="Delete Chat"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 ))}
                             </div>
                         )}

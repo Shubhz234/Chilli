@@ -6,7 +6,7 @@ import AIChat from '../models/AIChat.js';
 // @access  Public
 export const generateRecipeChat = async (req, res) => {
     try {
-        const { message, userId } = req.body;
+        const { message, userId, chatId } = req.body;
 
         if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here') {
             return res.status(500).json({ message: 'Gemini API Key missing in backend .env file.' });
@@ -25,14 +25,32 @@ Your Instructions:
         const responseText = result.response.text();
 
         // Save to DB if user is logged in
-        let chatRecord;
+        let chatRecord = null;
         if (userId) {
-            chatRecord = new AIChat({
-                user: userId,
-                userInput: message,
-                aiResponse: responseText
-            });
-            await chatRecord.save();
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if (chatId) {
+                // Find existing chat session and append
+                chatRecord = await AIChat.findById(chatId);
+                if (chatRecord) {
+                    chatRecord.messages.push({ type: 'user', text: message, timestamp });
+                    chatRecord.messages.push({ type: 'ai', text: responseText, timestamp });
+                    await chatRecord.save();
+                }
+            }
+
+            // If no existing chat found or no chatId provided, create a new one
+            if (!chatRecord) {
+                chatRecord = new AIChat({
+                    user: userId,
+                    title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
+                    messages: [
+                        { type: 'user', text: message, timestamp },
+                        { type: 'ai', text: responseText, timestamp }
+                    ]
+                });
+                await chatRecord.save();
+            }
         }
 
         res.json({ text: responseText, chatId: chatRecord ? chatRecord._id : null });
@@ -48,9 +66,26 @@ Your Instructions:
 // @access  Public
 export const getChatHistory = async (req, res) => {
     try {
-        const history = await AIChat.find({ user: req.params.userId }).sort({ createdAt: 1 });
+        const history = await AIChat.find({ user: req.params.userId }).sort({ createdAt: -1 });
         res.json(history);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching history' });
+    }
+};
+
+// @desc    Delete a specific chat history
+// @route   DELETE /api/ai/history/:chatId
+// @access  Public
+export const deleteChatHistory = async (req, res) => {
+    try {
+        const chat = await AIChat.findById(req.params.chatId);
+        if (chat) {
+            await chat.deleteOne();
+            res.json({ message: 'Chat deleted' });
+        } else {
+            res.status(404).json({ message: 'Chat not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting chat' });
     }
 };

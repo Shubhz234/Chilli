@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat } from 'lucide-react';
+import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 // Helper to convert standard YouTube links into embeddable iframe links
@@ -26,6 +26,48 @@ const RecipeDetail = () => {
     const [isFavourite, setIsFavourite] = useState(false);
     const [showShareTooltip, setShowShareTooltip] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    const user = JSON.parse(localStorage.getItem('chilli_user'));
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState('');
+
+    const submitReview = async () => {
+        if (!user) {
+            alert("Please log in to leave a review.");
+            navigate('/login');
+            return;
+        }
+        if (rating === 0) {
+            alert("Please select a star rating.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`http://localhost:5000/api/recipes/${recipe.id}/reviews`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    userName: user.name,
+                    rating,
+                    comment: reviewComment
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setRecipe({ ...data.recipe, id: data.recipe._id.toString() });
+                setRating(0);
+                setReviewComment('');
+            } else {
+                const err = await res.json();
+                alert(err.message || 'Error submitting review');
+            }
+        } catch (err) {
+            console.error("Failed to submit review", err);
+        }
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -139,6 +181,13 @@ const RecipeDetail = () => {
                                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
                                     {recipe.title}
                                 </h1>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="flex items-center text-orange-400">
+                                        <Star className="w-5 h-5 fill-current" />
+                                        <span className="ml-1 font-bold text-white">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
+                                    </div>
+                                    <span className="text-gray-400 text-sm">({recipe.numReviews || 0} reviews)</span>
+                                </div>
                                 <p className="text-lg text-gray-300 max-w-2xl leading-relaxed line-clamp-3 sm:line-clamp-4">
                                     {recipe.description}
                                 </p>
@@ -248,6 +297,74 @@ const RecipeDetail = () => {
                                     </div>
                                 ))}
                             </div>
+                        </section>
+
+                        {/* Reviews & Ratings Section */}
+                        <section className="liquid-card p-8">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                                <MessageSquare className="w-6 h-6 text-primary-500" />
+                                Reviews ({recipe.numReviews || 0})
+                            </h2>
+
+                            {/* Add Review Form */}
+                            <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+                                <h3 className="font-bold text-gray-900 mb-4">Leave a Review</h3>
+                                <div className="flex mb-4">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setRating(star)}
+                                            onMouseEnter={() => setHoverRating(star)}
+                                            onMouseLeave={() => setHoverRating(0)}
+                                            className="p-1 transition-transform hover:scale-110"
+                                        >
+                                            <Star
+                                                className={`w-8 h-8 transition-colors ${star <= (hoverRating || rating)
+                                                        ? 'text-orange-400 fill-orange-400'
+                                                        : 'text-gray-300'
+                                                    }`}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                                <textarea
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                    placeholder="Share your thoughts about this recipe... (optional)"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 transition-all resize-none mb-4"
+                                    rows="3"
+                                ></textarea>
+                                <button
+                                    onClick={submitReview}
+                                    className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-md hover:bg-primary-500 transition-colors"
+                                >
+                                    Submit Review
+                                </button>
+                            </div>
+
+                            {/* Reviews List */}
+                            {recipe.reviews && recipe.reviews.length > 0 ? (
+                                <div className="space-y-6">
+                                    {recipe.reviews.map((review, index) => (
+                                        <div key={index} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="font-bold text-gray-900">{review.name}</div>
+                                                <div className="flex items-center text-orange-400 gap-1">
+                                                    <span className="font-bold text-sm">{review.rating}</span>
+                                                    <Star className="w-4 h-4 fill-current" />
+                                                </div>
+                                            </div>
+                                            {review.comment && <p className="text-gray-700">{review.comment}</p>}
+                                            <div className="text-xs text-gray-400 mt-2">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center text-gray-500 italic py-4">No reviews yet. Be the first to rate!</div>
+                            )}
                         </section>
                     </div>
 

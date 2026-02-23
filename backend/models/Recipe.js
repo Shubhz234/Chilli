@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
 
+const reviewSchema = new mongoose.Schema({
+    userId: { type: String, required: true },
+    name: { type: String, required: true },
+    rating: { type: Number, required: true },
+    comment: { type: String }
+}, {
+    timestamps: true
+});
+
 const recipeSchema = new mongoose.Schema({
     title: { type: String, required: true },
     category: { type: String, required: true },
@@ -7,6 +16,8 @@ const recipeSchema = new mongoose.Schema({
     difficulty: { type: String, default: 'Medium' },
     servings: { type: Number, default: 4 },
     rating: { type: Number, default: 0 },
+    numReviews: { type: Number, default: 0 },
+    reviews: [reviewSchema],
     image: { type: String, default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80' },
     videoUrl: { type: String },
     description: { type: String },
