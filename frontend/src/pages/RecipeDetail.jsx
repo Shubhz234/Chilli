@@ -8,26 +8,53 @@ const RecipeDetail = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [recipes] = useState(() => {
+    const [recipe, setRecipe] = useState(() => {
+        // Fallback to local storage if API is slow or fails
         const saved = localStorage.getItem('chilli_recipes');
-        return saved ? JSON.parse(saved) : initialRecipes;
+        const parsedSaved = saved ? JSON.parse(saved) : initialRecipes;
+        return parsedSaved.find(r => r.id === id) || null;
     });
-    const recipe = recipes.find(r => r.id === id);
 
     const [isFavourite, setIsFavourite] = useState(false);
     const [showShareTooltip, setShowShareTooltip] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const fetchRecipe = async () => {
+            try {
+                const res = await fetch(`http://localhost:5000/api/recipes/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setRecipe({ ...data, id: data._id.toString() });
+                }
+            } catch (err) {
+                console.error("Failed to fetch recipe from API", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRecipe();
+
         if (recipe) {
             const savedFavourites = JSON.parse(localStorage.getItem('chilli_favourites') || '[]');
             setIsFavourite(savedFavourites.some(r => r.id === recipe.id));
         }
-    }, [id, recipe]);
+    }, [id, recipe?.id]);
+
+    if (loading && !recipe) {
+        return (
+            <div className="min-h-screen flex items-center justify-center relative z-0 flex-col">
+                <ChefHat className="w-16 h-16 text-primary-500 animate-bounce mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900">Cooking up your recipe...</h2>
+            </div>
+        );
+    }
 
     if (!recipe) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col">
+            <div className="min-h-screen flex items-center justify-center relative z-0 flex-col">
                 <h2 className="text-3xl font-bold text-gray-900 mb-4">Recipe Not Found</h2>
                 <Link to="/recipes" className="text-primary-600 hover:underline">Return to Recipes</Link>
             </div>

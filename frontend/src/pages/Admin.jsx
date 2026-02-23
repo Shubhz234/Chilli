@@ -15,11 +15,25 @@ const Admin = () => {
 
     const [formData, setFormData] = useState({
         id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '',
-        description: '', ingredients: ''
+        description: '', ingredients: '', steps: ''
     });
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        // Fetch fresh recipes from the database
+        const fetchRecipes = async () => {
+            try {
+                const res = await fetch('http://localhost:5000/api/recipes');
+                const data = await res.json();
+                setRecipes(data);
+                localStorage.setItem('chilli_recipes', JSON.stringify(data));
+            } catch (err) {
+                console.error('API Error:', err);
+            }
+        };
+        fetchRecipes();
+
         const storedUser = localStorage.getItem('chilli_user');
         if (!storedUser) {
             navigate('/login');
@@ -36,48 +50,59 @@ const Admin = () => {
         localStorage.setItem('chilli_recipes', JSON.stringify(newRecipes));
     };
 
-    const handleAddSubmit = (e) => {
+    const handleAddSubmit = async (e) => {
         e.preventDefault();
         const ingredientsArray = formData.ingredients.split('\n').filter(i => i.trim() !== '');
+        const stepsArray = formData.steps.split('\n').filter(s => s.trim() !== '');
+
+        const recipePayload = {
+            title: formData.title,
+            category: formData.category,
+            time: formData.time.includes('mins') ? formData.time : formData.time + ' mins',
+            image: formData.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
+            videoUrl: formData.videoUrl,
+            description: formData.description,
+            ingredients: ingredientsArray,
+            steps: stepsArray.length > 0 ? stepsArray : ['Mock step 1', 'Mock step 2']
+        };
 
         if (formData.id) {
             // Edit
-            const updated = recipes.map(r => {
-                if (r.id === formData.id) {
-                    return {
-                        ...r,
-                        title: formData.title,
-                        category: formData.category,
-                        time: formData.time.includes('mins') ? formData.time : formData.time + ' mins',
-                        image: formData.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
-                        videoUrl: formData.videoUrl,
-                        description: formData.description,
-                        ingredients: ingredientsArray
-                    };
+            try {
+                const res = await fetch(`http://localhost:5000/api/recipes/${formData.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipePayload)
+                });
+                if (res.ok) {
+                    const updatedRecipe = await res.json();
+                    const formattedRecipe = { ...updatedRecipe, id: updatedRecipe._id.toString() };
+                    const updatedList = recipes.map(r => r.id === formData.id ? formattedRecipe : r);
+                    saveAndSync(updatedList);
                 }
-                return r;
-            });
-            saveAndSync(updated);
+            } catch (err) {
+                console.error("Update error", err);
+            }
         } else {
             // Add
-            const recipeToAdd = {
-                id: Date.now().toString(),
-                title: formData.title,
-                category: formData.category,
-                time: formData.time + ' mins',
-                difficulty: 'Medium',
-                rating: 0,
-                image: formData.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
-                videoUrl: formData.videoUrl,
-                description: formData.description,
-                ingredients: ingredientsArray,
-                steps: ['Mock step 1', 'Mock step 2']
-            };
-            saveAndSync([recipeToAdd, ...recipes]);
+            try {
+                const res = await fetch('http://localhost:5000/api/recipes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipePayload)
+                });
+                if (res.ok) {
+                    const addedRecipe = await res.json();
+                    const formattedRecipe = { ...addedRecipe, id: addedRecipe._id.toString() };
+                    saveAndSync([formattedRecipe, ...recipes]);
+                }
+            } catch (err) {
+                console.error("Create error", err);
+            }
         }
 
         setShowForm(false);
-        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '' });
+        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
     };
 
     const handleEdit = (recipe) => {
@@ -88,9 +113,16 @@ const Admin = () => {
         setConfirmModal({ isOpen: true, type: 'delete', payload: id });
     };
 
-    const executeConfirmAction = () => {
+    const executeConfirmAction = async () => {
         if (confirmModal.type === 'delete') {
-            saveAndSync(recipes.filter(r => r.id !== confirmModal.payload));
+            try {
+                await fetch(`http://localhost:5000/api/recipes/${confirmModal.payload}`, {
+                    method: 'DELETE'
+                });
+                saveAndSync(recipes.filter(r => r.id !== confirmModal.payload));
+            } catch (err) {
+                console.error("Delete error", err);
+            }
         } else if (confirmModal.type === 'edit') {
             const recipe = confirmModal.payload;
             setFormData({
@@ -101,7 +133,8 @@ const Admin = () => {
                 image: recipe.image,
                 videoUrl: recipe.videoUrl || '',
                 description: recipe.description,
-                ingredients: recipe.ingredients.join('\n')
+                ingredients: recipe.ingredients ? recipe.ingredients.join('\n') : '',
+                steps: recipe.steps ? recipe.steps.join('\n') : ''
             });
             setShowForm(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -129,7 +162,7 @@ const Admin = () => {
                         onClick={() => {
                             if (showForm) {
                                 setShowForm(false);
-                                setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '' });
+                                setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                             } else {
                                 setShowForm(true);
                             }
@@ -175,11 +208,9 @@ const Admin = () => {
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
                                         >
-                                            <option>Main Course</option>
-                                            <option>Asian</option>
-                                            <option>Italian</option>
-                                            <option>Healthy</option>
-                                            <option>Dessert</option>
+                                            {['Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Quick & Easy', 'Vegan', 'Seafood'].map(c => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
@@ -242,6 +273,18 @@ const Admin = () => {
                                         placeholder="2 cups flour&#10;1 cup sugar&#10;..."
                                     ></textarea>
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Instructions / Steps (One per line)</label>
+                                    <textarea
+                                        rows="4"
+                                        required
+                                        value={formData.steps}
+                                        onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all whitespace-pre"
+                                        placeholder="Chop the vegetables&#10;Boil water&#10;..."
+                                    ></textarea>
+                                </div>
                             </div>
 
                             <div className="md:col-span-2 mt-4 border-t border-gray-100 pt-8 flex justify-end gap-4">
@@ -249,7 +292,7 @@ const Admin = () => {
                                     type="button"
                                     onClick={() => {
                                         setShowForm(false);
-                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '' });
+                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                                     }}
                                     className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                                 >

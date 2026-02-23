@@ -7,42 +7,31 @@ const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call and store mock user details
-        setTimeout(() => {
-            let mockUser;
-            if (formData.email === 'Shubhammore2244@gmail.com' && formData.password === '121233434') {
-                mockUser = {
-                    name: 'Shubham',
-                    email: formData.email,
-                    age: 26,
-                    dob: '1998-01-01',
-                    favoriteDish: 'Paneer Butter Masala',
-                    extras: 'Platform Administrator',
-                    isAdmin: true
-                };
+        try {
+            const res = await fetch('http://localhost:5000/api/users/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('chilli_user', JSON.stringify(data));
+                window.dispatchEvent(new Event('authStatusChanged'));
+                navigate('/');
             } else {
-                mockUser = {
-                    name: 'Gordon Ramsay',
-                    email: formData.email,
-                    age: 45,
-                    dob: '1979-05-12',
-                    favoriteDish: 'Beef Wellington',
-                    extras: 'Loves fresh ingredients and spicy curries',
-                    isAdmin: false
-                };
+                const errorData = await res.json();
+                alert(errorData.message || 'Login failed');
             }
-
-            localStorage.setItem('chilli_user', JSON.stringify(mockUser));
-
-            // Dispatch a custom event to notify Navbar of auth change
-            window.dispatchEvent(new Event('authStatusChanged'));
-
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('An error occurred during login');
+        } finally {
             setIsLoading(false);
-            navigate('/');
-        }, 1500);
+        }
     };
 
     return (

@@ -5,7 +5,7 @@ import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const Recipes = () => {
     const location = useLocation();
-    const [recipes] = useState(() => {
+    const [recipes, setRecipes] = useState(() => {
         const saved = localStorage.getItem('chilli_recipes');
         return saved ? JSON.parse(saved) : initialRecipes;
     });
@@ -13,6 +13,20 @@ const Recipes = () => {
     const [activeCategory, setActiveCategory] = useState(location.state?.category || 'All');
 
     useEffect(() => {
+        const fetchRecipes = async () => {
+            try {
+                const res = await fetch('http://localhost:5000/api/recipes');
+                if (res.ok) {
+                    const data = await res.json();
+                    setRecipes(data);
+                    localStorage.setItem('chilli_recipes', JSON.stringify(data));
+                }
+            } catch (err) {
+                console.error('API Error:', err);
+            }
+        };
+        fetchRecipes();
+
         if (location.state?.category) {
             setActiveCategory(location.state.category);
         }

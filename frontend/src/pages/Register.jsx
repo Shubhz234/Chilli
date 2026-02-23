@@ -7,27 +7,31 @@ const Register = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call and store mock user details
-        setTimeout(() => {
-            const mockUser = {
-                name: formData.name || 'New Chef',
-                email: formData.email,
-                age: 25,
-                dob: '1999-01-01',
-                favoriteDish: 'No dish selected',
-                extras: 'No extra details provided'
-            };
-            localStorage.setItem('chilli_user', JSON.stringify(mockUser));
+        try {
+            const res = await fetch('http://localhost:5000/api/users/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
-            // Dispatch a custom event to notify Navbar of auth change
-            window.dispatchEvent(new Event('authStatusChanged'));
-
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('chilli_user', JSON.stringify(data));
+                window.dispatchEvent(new Event('authStatusChanged'));
+                navigate('/');
+            } else {
+                const errorData = await res.json();
+                alert(errorData.message || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('An error occurred during registration');
+        } finally {
             setIsLoading(false);
-            navigate('/');
-        }, 1500);
+        }
     };
 
     return (
