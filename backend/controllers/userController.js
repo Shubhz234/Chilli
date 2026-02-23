@@ -7,7 +7,8 @@ import jwt from 'jsonwebtoken';
 // @access  Public
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, password } = req.body;
+        const email = req.body.email ? req.body.email.toLowerCase() : req.body.email;
 
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -44,7 +45,8 @@ export const registerUser = async (req, res) => {
 // @access  Public
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { password } = req.body;
+        const email = req.body.email ? req.body.email.toLowerCase() : req.body.email;
 
         const user = await User.findOne({ email });
         if (!user) {
