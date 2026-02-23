@@ -14,7 +14,7 @@ const Admin = () => {
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, payload: null });
 
     const [formData, setFormData] = useState({
-        id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '',
+        id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '',
         description: '', ingredients: '', steps: ''
     });
 
@@ -58,6 +58,7 @@ const Admin = () => {
         const recipePayload = {
             title: formData.title,
             category: formData.category,
+            difficulty: formData.difficulty,
             time: formData.time.includes('mins') ? formData.time : formData.time + ' mins',
             image: formData.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
             videoUrl: formData.videoUrl,
@@ -102,7 +103,7 @@ const Admin = () => {
         }
 
         setShowForm(false);
-        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
     };
 
     const handleEdit = (recipe) => {
@@ -130,6 +131,7 @@ const Admin = () => {
                 title: recipe.title,
                 category: recipe.category,
                 time: recipe.time.replace(' mins', ''),
+                difficulty: recipe.difficulty || 'Medium',
                 image: recipe.image,
                 videoUrl: recipe.videoUrl || '',
                 description: recipe.description,
@@ -162,7 +164,7 @@ const Admin = () => {
                         onClick={() => {
                             if (showForm) {
                                 setShowForm(false);
-                                setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                             } else {
                                 setShowForm(true);
                             }
@@ -200,7 +202,7 @@ const Admin = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
                                         <select
@@ -210,6 +212,18 @@ const Admin = () => {
                                         >
                                             {['Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Quick & Easy', 'Vegan', 'Seafood'].map(c => (
                                                 <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Difficulty</label>
+                                        <select
+                                            value={formData.difficulty}
+                                            onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
+                                        >
+                                            {['Easy', 'Medium', 'Hard'].map(d => (
+                                                <option key={d} value={d}>{d}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -292,7 +306,7 @@ const Admin = () => {
                                     type="button"
                                     onClick={() => {
                                         setShowForm(false);
-                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+                                        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
                                     }}
                                     className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                                 >
