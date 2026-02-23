@@ -16,6 +16,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Database Connection
+const PORT = process.env.PORT || 5000;
 let isConnected = false;
 const connectDB = async () => {
     if (isConnected) {
@@ -27,7 +29,10 @@ const connectDB = async () => {
             return;
         }
         mongoose.set('strictQuery', false);
-        await mongoose.connect(process.env.MONGO_URI);
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 5000
+        });
         isConnected = true;
         console.log('MongoDB Atlas Connected successfully');
     } catch (err) {
@@ -36,7 +41,6 @@ const connectDB = async () => {
     }
 };
 
-// Ensure database connects before serving API requests
 app.use(async (req, res, next) => {
     await connectDB();
     next();
@@ -51,7 +55,6 @@ app.get('/', (req, res) => {
     res.send('Chilli API is running on Vercel...');
 });
 
-const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
