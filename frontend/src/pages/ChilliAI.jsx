@@ -180,9 +180,9 @@ const ChilliAI = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex pt-20 overflow-hidden">
+        <div className="bg-white flex pt-24 overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
             {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'} overflow-hidden transition-all duration-300 ease-in-out bg-[#f0f4f9] flex flex-col h-[calc(100vh-80px)] flex-shrink-0 z-40 md:relative absolute shadow-2xl md:shadow-none`}>
+            <div className={`${isSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'} overflow-hidden transition-all duration-300 ease-in-out bg-[#f0f4f9] flex flex-col h-full flex-shrink-0 z-40 md:relative absolute shadow-2xl md:shadow-none`}>
                 <div className="p-4 w-64 flex flex-col h-full opacity-100">
                     <button
                         onClick={handleNewChat}
@@ -226,7 +226,7 @@ const ChilliAI = () => {
             </div>
 
             {/* Main Chat Column */}
-            <div className="flex-1 flex flex-col h-[calc(100vh-80px)] relative min-w-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] md:shadow-none rounded-tl-2xl md:rounded-none z-10 w-full">
+            <div className="flex-1 flex flex-col h-full relative min-w-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] md:shadow-none rounded-tl-2xl md:rounded-none z-10 w-full">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 z-10 sticky top-0 bg-white bg-opacity-95 backdrop-blur-md border-b border-gray-100 md:border-none">
                     <div className="flex items-center gap-2">
