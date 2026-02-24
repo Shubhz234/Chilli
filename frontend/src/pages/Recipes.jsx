@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, Clock, Flame, Star, Filter, Dices } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
@@ -11,7 +11,7 @@ const Recipes = () => {
     });
     const [searchTerm, setSearchTerm] = useState(location.state?.searchTerm || '');
     const [activeCategory, setActiveCategory] = useState(location.state?.category || 'All');
-    const navigate = require('react-router-dom').useNavigate();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRecipes = async () => {
