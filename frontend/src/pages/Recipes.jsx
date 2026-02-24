@@ -112,7 +112,7 @@ const Recipes = () => {
                 </div>
 
                 {/* Recipe Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-12 gap-x-8 sm:gap-8">
                     {filteredRecipes.map((recipe, index) => (
                         <Link
                             to={`/recipe/${recipe.id}`}
@@ -124,7 +124,8 @@ const Recipes = () => {
                             {/* Image Container */}
                             <div className="relative h-56 overflow-hidden">
                                 <img
-                                    src={recipe.image}
+                                    src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}
                                     alt={recipe.title}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 transform-gpu"
                                 />

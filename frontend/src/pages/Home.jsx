@@ -41,18 +41,18 @@ const Home = () => {
 
                         {/* Global Search Bar */}
                         <div className="max-w-2xl mx-auto glass-panel p-3 rounded-3xl animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                            <form className="flex items-center gap-2" onSubmit={handleSearch}>
+                            <form className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2" onSubmit={handleSearch}>
                                 <div className="flex-1 flex items-center px-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 focus-within:border-primary-300 focus-within:bg-white/80 transition-all shadow-input">
-                                    <Search className="w-5 h-5 text-gray-500" />
+                                    <Search className="w-5 h-5 text-gray-500 shrink-0" />
                                     <input
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder='Try "Paneer Tikka" or "I have eggs and tomatoes..."'
-                                        className="w-full bg-transparent border-none py-4 px-3 focus:outline-none text-gray-900 placeholder-gray-500 font-medium"
+                                        placeholder='Try "Paneer Tikka"...'
+                                        className="w-full bg-transparent border-none py-4 px-3 focus:outline-none text-gray-900 placeholder-gray-500 font-medium truncate"
                                     />
                                 </div>
-                                <button type="submit" className="liquid-button px-8 py-4">
+                                <button type="submit" className="liquid-button px-8 py-4 sm:w-auto shrink-0 w-full">
                                     Search
                                 </button>
                             </form>
@@ -67,7 +67,7 @@ const Home = () => {
                     <div className="grid md:grid-cols-2 gap-16 items-center">
                         <div className="order-2 md:order-1 relative">
                             <div className="absolute inset-0 bg-gradient-to-tr from-primary-200 to-orange-200 rounded-3xl transform -rotate-3 scale-105 blur-lg -z-10 opacity-60"></div>
-                            <div className="liquid-card p-8 relative">
+                            <div className="liquid-card p-5 sm:p-8 relative">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-orange-400"></div>
                                 <div className="flex items-start gap-4 mb-6">
                                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">

@@ -152,7 +152,7 @@ const Login = () => {
             {/* New User Not Found Popup */}
             {showNewUserPopup && (
                 <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in px-4">
-                    <div className="liquid-card p-8 max-w-sm w-full scale-100 transform transition-transform border border-white/40">
+                    <div className="liquid-card p-6 sm:p-8 max-w-sm w-full scale-100 transform transition-transform border border-white/40">
                         <div className="mb-6 text-center">
                             <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <User className="w-8 h-8" />

@@ -231,97 +231,98 @@ const RecipeDetail = () => {
     return (
         <div className="min-h-screen pb-20 relative z-0">
             {/* Hero Header */}
-            <div className="relative h-96 w-full lg:h-[500px]">
-                <img
-                    src={recipe.image}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+            <div className="relative w-full min-h-[480px] lg:min-h-[550px] flex flex-col justify-between pt-28 pb-28 md:pb-32">
+                <div className="absolute inset-0 z-0">
+                    <img
+                        src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}
+                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/40 to-transparent"></div>
+                </div>
 
-                <div className="absolute top-24 left-4 sm:top-28 sm:left-8 z-10">
+                <div className="hidden sm:block relative z-50 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8">
                     <button
                         onClick={handleBack}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-colors text-sm font-medium border-none cursor-pointer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full text-white transition-colors text-sm font-bold border border-white/20 cursor-pointer shadow-sm w-max"
                     >
                         <ArrowLeft className="w-4 h-4" /> Back
                     </button>
                 </div>
 
-                <div className="absolute bottom-0 left-0 w-full">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 md:pb-32">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="max-w-3xl animate-slide-up">
-                                <span className="inline-block px-3 py-1 bg-primary-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg mb-4">
-                                    {recipe.category}
-                                </span>
-                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
-                                    {recipe.title}
-                                </h1>
-                                {recipe.author ? (
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <img src={recipe.author.profilePhoto || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'} alt={recipe.author.name} className="w-8 h-8 rounded-full border border-white/40" />
-                                        <Link to={`/user/${recipe.author._id}`} className="text-white hover:text-primary-300 font-medium transition-colors flex items-center gap-1.5">
-                                            By {recipe.author.name}
-                                            {(recipe.author.isVerified || recipe.author.isAdmin) && <BadgeCheck className="w-4 h-4 text-primary-500" />}
-                                        </Link>
-                                    </div>
-                                ) : adminUser ? (
-                                    <div className="flex items-center gap-3 mb-4 text-white font-medium">
-                                        <img src={adminUser.profilePhoto || "https://api.dicebear.com/7.x/bottts/svg?seed=Chilli"} alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20 object-cover" />
-                                        <Link to={`/user/${adminUser._id}`} className="text-white hover:text-primary-300 transition-colors font-bold flex items-center gap-1.5">
-                                            By {adminUser.name} <BadgeCheck className="w-4 h-4 text-primary-500" />
-                                        </Link>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-3 mb-4 text-white font-medium">
-                                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Chilli" alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20" />
-                                        <span className="text-white font-bold flex items-center gap-1.5">By Official <BadgeCheck className="w-4 h-4 text-primary-500" /></span>
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-auto">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="max-w-3xl animate-slide-up">
+                            <span className="inline-block px-3 py-1 bg-primary-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg mb-4">
+                                {recipe.category}
+                            </span>
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
+                                {recipe.title}
+                            </h1>
+                            {recipe.author ? (
+                                <div className="flex items-center gap-3 mb-4">
+                                    <img src={recipe.author.profilePhoto || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'} alt={recipe.author.name} className="w-8 h-8 rounded-full border border-white/40" />
+                                    <Link to={`/user/${recipe.author._id}`} className="text-white hover:text-primary-300 font-medium transition-colors flex items-center gap-1.5">
+                                        By {recipe.author.name}
+                                        {(recipe.author.isVerified || recipe.author.isAdmin) && <BadgeCheck className="w-4 h-4 text-primary-500" />}
+                                    </Link>
+                                </div>
+                            ) : adminUser ? (
+                                <div className="flex items-center gap-3 mb-4 text-white font-medium">
+                                    <img src={adminUser.profilePhoto || "https://api.dicebear.com/7.x/bottts/svg?seed=Chilli"} alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20 object-cover" />
+                                    <Link to={`/user/${adminUser._id}`} className="text-white hover:text-primary-300 transition-colors font-bold flex items-center gap-1.5">
+                                        By {adminUser.name} <BadgeCheck className="w-4 h-4 text-primary-500" />
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-3 mb-4 text-white font-medium">
+                                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Chilli" alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20" />
+                                    <span className="text-white font-bold flex items-center gap-1.5">By Official <BadgeCheck className="w-4 h-4 text-primary-500" /></span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="flex items-center text-orange-400">
+                                    <Star className="w-5 h-5 fill-current" />
+                                    <span className="ml-1 font-bold text-white">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
+                                </div>
+                                <span className="text-gray-400 text-sm">({recipe.numReviews || 0} reviews)</span>
+                            </div>
+                            <p className="text-lg text-gray-300 max-w-2xl leading-relaxed line-clamp-3 sm:line-clamp-4">
+                                {recipe.description}
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full pr-1">
+                                <button
+                                    onClick={handleLikeToggle}
+                                    className={`p-3 rounded-full transition-all hover:scale-110 flex items-center gap-2 ${isLiked ? 'text-rose-500' : 'text-white'}`}
+                                >
+                                    <Heart className={`w-6 h-6 ${isLiked ? 'fill-rose-500' : ''}`} />
+                                </button>
+                                <span className="text-white font-bold mr-3">{likeCount}</span>
+                            </div>
+                            <div className="relative">
+                                <button onClick={handleShare} className="p-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all hover:scale-110">
+                                    <Share2 className="w-6 h-6" />
+                                </button>
+                                {showShareTooltip && (
+                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap animate-fade-in shadow-lg before:content-[''] before:absolute before:-bottom-1 before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-gray-900">
+                                        Link copied!
                                     </div>
                                 )}
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex items-center text-orange-400">
-                                        <Star className="w-5 h-5 fill-current" />
-                                        <span className="ml-1 font-bold text-white">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
-                                    </div>
-                                    <span className="text-gray-400 text-sm">({recipe.numReviews || 0} reviews)</span>
-                                </div>
-                                <p className="text-lg text-gray-300 max-w-2xl leading-relaxed line-clamp-3 sm:line-clamp-4">
-                                    {recipe.description}
-                                </p>
                             </div>
-
-                            <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full pr-1">
-                                    <button
-                                        onClick={handleLikeToggle}
-                                        className={`p-3 rounded-full transition-all hover:scale-110 flex items-center gap-2 ${isLiked ? 'text-rose-500' : 'text-white'}`}
-                                    >
-                                        <Heart className={`w-6 h-6 ${isLiked ? 'fill-rose-500' : ''}`} />
-                                    </button>
-                                    <span className="text-white font-bold mr-3">{likeCount}</span>
-                                </div>
-                                <div className="relative">
-                                    <button onClick={handleShare} className="p-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all hover:scale-110">
-                                        <Share2 className="w-6 h-6" />
-                                    </button>
-                                    {showShareTooltip && (
-                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap animate-fade-in shadow-lg before:content-[''] before:absolute before:-bottom-1 before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-gray-900">
-                                            Link copied!
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={toggleFavourite}
-                                    className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-xl transition-all hover:-translate-y-1 ${isFavourite
-                                        ? 'bg-rose-50 text-rose-600 border border-rose-200'
-                                        : 'bg-white text-gray-900 hover:bg-primary-50 hover:text-primary-600'
-                                        }`}
-                                >
-                                    <Bookmark className={`w-5 h-5 transition-colors ${isFavourite ? 'text-rose-500 fill-rose-500' : 'text-gray-400'}`} />
-                                    {isFavourite ? 'Saved' : 'Save'}
-                                </button>
-                            </div>
+                            <button
+                                onClick={toggleFavourite}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-xl transition-all hover:-translate-y-1 ${isFavourite
+                                    ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                                    : 'bg-white text-gray-900 hover:bg-primary-50 hover:text-primary-600'
+                                    }`}
+                            >
+                                <Bookmark className={`w-5 h-5 transition-colors ${isFavourite ? 'text-rose-500 fill-rose-500' : 'text-gray-400'}`} />
+                                {isFavourite ? 'Saved' : 'Save'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -405,7 +406,7 @@ const RecipeDetail = () => {
                             )}
 
                             {/* Instructions Section */}
-                            <section className="liquid-card p-8">
+                            <section className="liquid-card p-5 sm:p-8">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-100 gap-4">
                                     <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                         <ChefHat className="w-6 h-6 text-primary-500" />
@@ -438,7 +439,7 @@ const RecipeDetail = () => {
                             </section>
 
                             {/* Reviews & Ratings Section */}
-                            <section className="liquid-card p-8">
+                            <section className="liquid-card p-5 sm:p-8">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
                                     <MessageSquare className="w-6 h-6 text-primary-500" />
                                     Reviews ({recipe.numReviews || 0})
@@ -527,7 +528,7 @@ const RecipeDetail = () => {
                                 </div>
                             </div>
 
-                            <div className="sticky top-24 liquid-card p-8">
+                            <div className="sticky top-24 liquid-card p-5 sm:p-8">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                                     <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                         <span>Ingredients</span>
@@ -573,56 +574,58 @@ const RecipeDetail = () => {
             </div>
 
             {/* Cook Mode Modal */}
-            {cookMode && (
-                <div className="fixed inset-0 z-50 bg-white flex flex-col text-gray-900 overflow-hidden animate-fade-in">
-                    {/* Progress Bar */}
-                    <div className="w-full h-2 bg-gray-100">
-                        <div
-                            className="h-full bg-primary-500 transition-all duration-300"
-                            style={{ width: `${((cookStep + 1) / recipe.steps.length) * 100}%` }}
-                        ></div>
-                    </div>
+            {
+                cookMode && (
+                    <div className="fixed inset-0 z-50 bg-white flex flex-col text-gray-900 overflow-hidden animate-fade-in">
+                        {/* Progress Bar */}
+                        <div className="w-full h-2 bg-gray-100">
+                            <div
+                                className="h-full bg-primary-500 transition-all duration-300"
+                                style={{ width: `${((cookStep + 1) / recipe.steps.length) * 100}%` }}
+                            ></div>
+                        </div>
 
-                    <div className="p-6 flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-gray-500">Cook Mode</h2>
-                        <button
-                            onClick={() => { setCookMode(false); setCookStep(0); }}
-                            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
-                    </div>
+                        <div className="p-6 flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-gray-500">Cook Mode</h2>
+                            <button
+                                onClick={() => { setCookMode(false); setCookStep(0); }}
+                                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
 
-                    <div className="flex-1 overflow-y-auto px-6 py-10 flex flex-col items-center justify-center">
-                        <div className="max-w-3xl w-full text-center">
-                            <span className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 font-bold rounded-full text-sm mb-6">
-                                Step {cookStep + 1} of {recipe.steps.length}
-                            </span>
-                            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-12">
-                                {recipe.steps[cookStep]}
-                            </h1>
+                        <div className="flex-1 overflow-y-auto px-6 py-10 flex flex-col items-center justify-center">
+                            <div className="max-w-3xl w-full text-center">
+                                <span className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 font-bold rounded-full text-sm mb-6">
+                                    Step {cookStep + 1} of {recipe.steps.length}
+                                </span>
+                                <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-12">
+                                    {recipe.steps[cookStep]}
+                                </h1>
+                            </div>
+                        </div>
+
+                        <div className="p-6 flex items-center justify-between bg-white border-t border-gray-100 max-w-5xl mx-auto w-full">
+                            <button
+                                onClick={prevCookStep}
+                                disabled={cookStep === 0}
+                                className={`flex items-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${cookStep === 0 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
+                            >
+                                <ChevronLeft className="w-5 h-5" /> Previous
+                            </button>
+                            <button
+                                onClick={nextCookStep}
+                                disabled={cookStep === recipe.steps.length - 1}
+                                className={`flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-colors shadow-lg ${cookStep === recipe.steps.length - 1 ? 'opacity-50 cursor-not-allowed bg-primary-300 text-white shadow-none' : 'bg-primary-600 hover:bg-primary-500 text-white'}`}
+                            >
+                                Next Step <ChevronRight className="w-5 h-5" />
+                            </button>
                         </div>
                     </div>
-
-                    <div className="p-6 flex items-center justify-between bg-white border-t border-gray-100 max-w-5xl mx-auto w-full">
-                        <button
-                            onClick={prevCookStep}
-                            disabled={cookStep === 0}
-                            className={`flex items-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${cookStep === 0 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
-                        >
-                            <ChevronLeft className="w-5 h-5" /> Previous
-                        </button>
-                        <button
-                            onClick={nextCookStep}
-                            disabled={cookStep === recipe.steps.length - 1}
-                            className={`flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-colors shadow-lg ${cookStep === recipe.steps.length - 1 ? 'opacity-50 cursor-not-allowed bg-primary-300 text-white shadow-none' : 'bg-primary-600 hover:bg-primary-500 text-white'}`}
-                        >
-                            Next Step <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

@@ -93,7 +93,7 @@ const Navbar = () => {
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-8">
+                    <div className="hidden lg:flex items-center space-x-8">
                         <div className="flex space-x-6 relative">
                             {navLinks.map((link) => (
                                 <Link
@@ -105,7 +105,7 @@ const Navbar = () => {
                                         }`}
                                 >
                                     {link.name === 'Chilli AI' && (
-                                        <span className="absolute -top-3 -right-4 flex h-4 w-4">
+                                        <span className="absolute -top-1.5 -right-3 flex h-3 w-3">
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                             <span className="relative inline-flex rounded-full h-4 w-4 bg-gradient-to-tr from-orange-400 to-red-500"></span>
                                         </span>
@@ -207,12 +207,23 @@ const Navbar = () => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center">
+                    <div className="lg:hidden flex items-center gap-2">
+                        {user && (
+                            <Link
+                                to="/notifications"
+                                className="relative p-2 text-gray-600 hover:text-primary-500 transition-colors"
+                            >
+                                <Bell className="w-6 h-6 md:w-5 md:h-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+                                )}
+                            </Link>
+                        )}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="p-2 text-gray-600 hover:text-primary-500 transition-colors"
                         >
-                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                            {isMobileMenuOpen ? <X className="w-7 h-7 md:w-6 md:h-6" /> : <Menu className="w-7 h-7 md:w-6 md:h-6" />}
                         </button>
                     </div>
                 </div>
@@ -220,7 +231,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Content */}
             <div
-                className={`md:hidden absolute top-full left-0 w-full glass-panel border-t border-gray-100 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-3xl shadow-xl border-t border-gray-100 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100 py-4' : 'max-h-0 opacity-0'
                     }`}
             >
                 <div className="px-4 py-4 space-y-3">

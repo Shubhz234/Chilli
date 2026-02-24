@@ -132,7 +132,7 @@ const Profile = () => {
                             </p>
                         </div>
 
-                        <div className="shrink-0 mt-6 sm:mt-0 flex gap-2">
+                        <div className="shrink-0 mt-6 sm:mt-0 flex flex-wrap justify-center sm:justify-start gap-2 w-full sm:w-auto">
                             {isEditing ? (
                                 <button
                                     onClick={handleSave}
@@ -144,7 +144,7 @@ const Profile = () => {
                             ) : (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-2 px-6 py-3 bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-xl font-bold transition-colors shadow-sm"
+                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-xl font-bold transition-colors shadow-sm flex-1 sm:flex-none"
                                 >
                                     <Edit2 className="w-5 h-5" />
                                     Edit
@@ -152,7 +152,7 @@ const Profile = () => {
                             )}
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 hover:bg-rose-50 hover:text-rose-600 rounded-xl font-bold transition-colors shadow-sm"
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 hover:bg-rose-50 hover:text-rose-600 rounded-xl font-bold transition-colors shadow-sm flex-1 sm:flex-none"
                             >
                                 <LogOut className="w-5 h-5" />
                                 Sign Out
@@ -171,7 +171,7 @@ const Profile = () => {
                             Personal Details
                         </h2>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="bg-gray-50 rounded-xl p-4">
                                 <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Age</p>
                                 {isEditing ? (
@@ -223,7 +223,7 @@ const Profile = () => {
                                 <p className="text-xl font-extrabold text-gray-900">{user.favoriteDish || 'Not set'}</p>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4 mt-6 border-t border-primary-200/50 pt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-t border-primary-200/50 pt-4">
                                 <div>
                                     <p className="text-xs text-primary-600/80 uppercase font-bold mb-1 border-b border-primary-200 pb-1">Spice Level</p>
                                     {isEditing ? (
@@ -372,7 +372,11 @@ const Profile = () => {
                             <div className="space-y-4">
                                 {savedRecipesData.slice(0, 3).map(recipe => (
                                     <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100 group">
-                                        <img src={recipe.image} alt={recipe.title} className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform" />
+                                        <img
+                                            src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}
+                                            alt={recipe.title}
+                                            className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform" />
                                         <div>
                                             <h4 className="font-bold text-gray-900 line-clamp-1">{recipe.title}</h4>
                                             <p className="text-sm text-gray-500">{recipe.difficulty} • {recipe.time}</p>
@@ -397,7 +401,7 @@ const Profile = () => {
 
             {/* Full Screen Grid Modal */}
             {viewMode && (
-                <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden animate-slide-up">
+                <div className="fixed inset-0 z-[101] bg-white flex flex-col overflow-hidden animate-slide-up">
                     <div className={`p-4 sm:p-6 flex items-center justify-between shadow-sm z-10 ${viewMode === 'uploaded' ? 'bg-primary-500 text-white' : 'bg-rose-500 text-white'}`}>
                         <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
                             {viewMode === 'uploaded' ? <Utensils className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
@@ -419,7 +423,11 @@ const Profile = () => {
                             {(viewMode === 'uploaded' ? uploadedRecipes : savedRecipesData).map(recipe => (
                                 <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col items-center p-3 sm:p-4 text-center">
                                     <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 relative">
-                                        <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <img
+                                            src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }}
+                                            alt={recipe.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                                             <span className="text-white text-xs font-bold px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">View Recipe</span>
                                         </div>

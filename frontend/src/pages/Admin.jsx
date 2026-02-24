@@ -278,7 +278,7 @@ const Admin = () => {
 
                 {/* Add/Edit Recipe Form */}
                 {showForm && (
-                    <div className="liquid-card p-8 mb-10 animate-slide-up">
+                    <div className="liquid-card p-5 sm:p-8 mb-10 animate-slide-up">
                         <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
                             {formData.id ? <Edit2 className="w-6 h-6 text-primary-500" /> : <ChefHat className="w-6 h-6 text-primary-500" />}
                             {formData.id ? 'Edit Recipe' : 'Create New Recipe'}
@@ -495,9 +495,9 @@ const Admin = () => {
                 <div className="liquid-card overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
 
                     <div className="p-6 border-b border-gray-100 bg-white/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <h2 className="text-xl font-bold text-gray-900">Manage Recipes</h2>
-                            <div className="bg-gray-100 p-1 rounded-xl flex items-center">
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 w-full lg:w-auto">
+                            <h2 className="text-xl font-bold text-gray-900 shrink-0">Manage Recipes</h2>
+                            <div className="bg-gray-100 p-1 rounded-xl flex flex-wrap items-center">
                                 <button
                                     onClick={() => setActiveTab('approved')}
                                     className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'approved' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -593,9 +593,9 @@ const Admin = () => {
                                 <thead>
                                     <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
                                         <th className="p-4 font-semibold">Recipe</th>
-                                        <th className="p-4 font-semibold">Category</th>
-                                        <th className="p-4 font-semibold">Rating</th>
-                                        <th className="p-4 font-semibold">Difficulty</th>
+                                        <th className="p-4 font-semibold hidden md:table-cell">Category</th>
+                                        <th className="p-4 font-semibold hidden lg:table-cell">Rating</th>
+                                        <th className="p-4 font-semibold hidden sm:table-cell">Difficulty</th>
                                         <th className="p-4 font-semibold text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -604,26 +604,26 @@ const Admin = () => {
                                         <tr key={recipe.id} className="hover:bg-gray-50/50 transition-colors group">
                                             <td className="p-4">
                                                 <div className="flex items-center gap-4">
-                                                    <img src={recipe.image} alt={recipe.title} className="w-12 h-12 rounded-lg object-cover shadow-sm" />
+                                                    <img src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'} onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c' }} alt={recipe.title} className="w-12 h-12 rounded-lg object-cover shadow-sm bg-gray-100" />
                                                     <div>
-                                                        <p className="font-bold text-gray-900">{recipe.title}</p>
+                                                        <p className="font-bold text-gray-900 line-clamp-2">{recipe.title}</p>
                                                         <p className="text-xs text-gray-500 mt-1">{recipe.time}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-4 hidden md:table-cell">
                                                 <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold">
                                                     {recipe.category}
                                                 </span>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-4 hidden lg:table-cell">
                                                 <div className="flex items-center gap-1.5 text-gray-700">
                                                     <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
                                                     <span className="font-bold">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
                                                     <span className="text-gray-400 text-xs">({recipe.numReviews || 0})</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4">
+                                            <td className="p-4 hidden sm:table-cell">
                                                 <span className="text-sm font-medium text-gray-700">
                                                     {recipe.difficulty}
                                                 </span>
