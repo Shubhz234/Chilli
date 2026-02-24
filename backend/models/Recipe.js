@@ -28,7 +28,10 @@ const recipeSchema = new mongoose.Schema({
     calories: { type: Number, default: 0 },
     protein: { type: Number, default: 0 },
     carbs: { type: Number, default: 0 },
-    fat: { type: Number, default: 0 }
+    fat: { type: Number, default: 0 },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, {
     timestamps: true
 });

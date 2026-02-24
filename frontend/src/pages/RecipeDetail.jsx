@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare, X, Printer, ShoppingCart, Activity, ChevronRight, ChevronLeft, MapPin } from 'lucide-react';
+import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare, X, Printer, ShoppingCart, Activity, ChevronRight, ChevronLeft, MapPin, Bookmark, BadgeCheck } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 // Helper to convert standard YouTube links into embeddable iframe links
@@ -35,6 +35,10 @@ const RecipeDetail = () => {
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [reviewComment, setReviewComment] = useState('');
+    const [isLiked, setIsLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(0);
+
+    const [adminUser, setAdminUser] = useState(null);
 
     const submitReview = async () => {
         if (!user) {
@@ -82,6 +86,13 @@ const RecipeDetail = () => {
                 if (res.ok) {
                     const data = await res.json();
                     setRecipe({ ...data, id: data._id.toString() });
+                    if (data.likes) {
+                        setLikeCount(data.likes.length);
+                        const storedUser = JSON.parse(localStorage.getItem('chilli_user'));
+                        if (storedUser && data.likes.includes(storedUser.id)) {
+                            setIsLiked(true);
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch recipe from API", err);
@@ -89,13 +100,50 @@ const RecipeDetail = () => {
                 setLoading(false);
             }
         };
+
+        const fetchAdminUser = async () => {
+            try {
+                const res = await fetch('/api/users');
+                if (res.ok) {
+                    const data = await res.json();
+                    const admin = data.find(u => u.isAdmin);
+                    if (admin) setAdminUser(admin);
+                }
+            } catch (err) {
+                console.error("Failed to fetch admin user", err);
+            }
+        };
+
         fetchRecipe();
+        fetchAdminUser();
 
         if (recipe) {
             const savedFavourites = JSON.parse(localStorage.getItem('chilli_favourites') || '[]');
             setIsFavourite(savedFavourites.some(r => r.id === recipe.id));
         }
     }, [id, recipe?.id]);
+
+    const handleLikeToggle = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        try {
+            const res = await fetch(`/api/recipes/${recipe.id}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setIsLiked(!isLiked);
+                setLikeCount(data.likes.length);
+            }
+        } catch (err) {
+            console.error('Error toggling like:', err);
+        }
+    };
 
     if (loading && !recipe) {
         return (
@@ -210,6 +258,27 @@ const RecipeDetail = () => {
                                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
                                     {recipe.title}
                                 </h1>
+                                {recipe.author ? (
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <img src={recipe.author.profilePhoto || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'} alt={recipe.author.name} className="w-8 h-8 rounded-full border border-white/40" />
+                                        <Link to={`/user/${recipe.author._id}`} className="text-white hover:text-primary-300 font-medium transition-colors flex items-center gap-1.5">
+                                            By {recipe.author.name}
+                                            {(recipe.author.isVerified || recipe.author.isAdmin) && <BadgeCheck className="w-4 h-4 text-primary-500" />}
+                                        </Link>
+                                    </div>
+                                ) : adminUser ? (
+                                    <div className="flex items-center gap-3 mb-4 text-white font-medium">
+                                        <img src={adminUser.profilePhoto || "https://api.dicebear.com/7.x/bottts/svg?seed=Chilli"} alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20 object-cover" />
+                                        <Link to={`/user/${adminUser._id}`} className="text-white hover:text-primary-300 transition-colors font-bold flex items-center gap-1.5">
+                                            By {adminUser.name} <BadgeCheck className="w-4 h-4 text-primary-500" />
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-3 mb-4 text-white font-medium">
+                                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Chilli" alt="Chilli Team" className="w-8 h-8 rounded-full border border-white/40 bg-white/20" />
+                                        <span className="text-white font-bold flex items-center gap-1.5">By Official <BadgeCheck className="w-4 h-4 text-primary-500" /></span>
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="flex items-center text-orange-400">
                                         <Star className="w-5 h-5 fill-current" />
@@ -223,6 +292,15 @@ const RecipeDetail = () => {
                             </div>
 
                             <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full pr-1">
+                                    <button
+                                        onClick={handleLikeToggle}
+                                        className={`p-3 rounded-full transition-all hover:scale-110 flex items-center gap-2 ${isLiked ? 'text-rose-500' : 'text-white'}`}
+                                    >
+                                        <Heart className={`w-6 h-6 ${isLiked ? 'fill-rose-500' : ''}`} />
+                                    </button>
+                                    <span className="text-white font-bold mr-3">{likeCount}</span>
+                                </div>
                                 <div className="relative">
                                     <button onClick={handleShare} className="p-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all hover:scale-110">
                                         <Share2 className="w-6 h-6" />
@@ -240,8 +318,8 @@ const RecipeDetail = () => {
                                         : 'bg-white text-gray-900 hover:bg-primary-50 hover:text-primary-600'
                                         }`}
                                 >
-                                    <Heart className={`w-5 h-5 transition-colors ${isFavourite ? 'text-rose-500 fill-rose-500' : 'text-gray-400'}`} />
-                                    {isFavourite ? 'Saved to Favourites' : 'Save Recipe'}
+                                    <Bookmark className={`w-5 h-5 transition-colors ${isFavourite ? 'text-rose-500 fill-rose-500' : 'text-gray-400'}`} />
+                                    {isFavourite ? 'Saved' : 'Save'}
                                 </button>
                             </div>
                         </div>

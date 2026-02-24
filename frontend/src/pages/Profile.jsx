@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Calendar, Info, LogOut, Utensils, Heart, Edit2, Save } from 'lucide-react';
 
 const Profile = () => {
@@ -7,6 +7,11 @@ const Profile = () => {
     const [user, setUser] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({});
+    const [uploadedRecipes, setUploadedRecipes] = useState([]);
+    const [savedRecipesData, setSavedRecipesData] = useState([]);
+
+    // Full Screen Modal States
+    const [viewMode, setViewMode] = useState(null); // 'uploaded' | 'saved' | null
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -15,6 +20,24 @@ const Profile = () => {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
             setEditData(parsedUser);
+
+            const fetchUserData = async () => {
+                try {
+                    // Fetch user's uploaded recipes
+                    const res = await fetch('/api/recipes');
+                    if (res.ok) {
+                        const allRecipes = await res.json();
+                        setUploadedRecipes(allRecipes.filter(r =>
+                            (r.author && (r.author._id === parsedUser.id || r.author === parsedUser.id)) ||
+                            (parsedUser.isAdmin && !r.author)
+                        ));
+                    }
+                } catch (err) { console.error(err); }
+            };
+            fetchUserData();
+
+            const savedFavorites = JSON.parse(localStorage.getItem('chilli_favourites') || '[]');
+            setSavedRecipesData(savedFavorites);
         } else {
             // Re-route to login if no user is found
             navigate('/login');
@@ -80,11 +103,30 @@ const Profile = () => {
                                     name="name"
                                     value={editData.name}
                                     onChange={handleChange}
-                                    className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight bg-gray-50 border border-gray-200 rounded-lg px-2 w-full max-w-sm"
+                                    className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight bg-gray-50 border border-gray-200 rounded-lg px-2 w-full max-w-sm mb-2"
                                 />
                             ) : (
-                                <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{user.name}</h1>
+                                <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">{user.name}</h1>
                             )}
+
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="bio"
+                                    value={editData.bio || ''}
+                                    onChange={handleChange}
+                                    placeholder="Add a bio..."
+                                    className="text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2 w-full max-w-md mb-2"
+                                />
+                            ) : (
+                                <p className="text-gray-600 italic mb-2">"{user.bio || 'Home cook'}"</p>
+                            )}
+
+                            <div className="flex items-center justify-center sm:justify-start gap-4 text-sm font-semibold text-gray-600 mb-2">
+                                <div><span className="text-gray-900 font-bold">{user.followers?.length || 0}</span> Followers</div>
+                                <div><span className="text-gray-900 font-bold">{user.following?.length || 0}</span> Following</div>
+                            </div>
+
                             <p className="text-primary-600 font-medium mt-1 flex items-center justify-center sm:justify-start gap-2">
                                 <Mail className="w-4 h-4" /> {user.email}
                             </p>
@@ -283,7 +325,113 @@ const Profile = () => {
                     </div>
 
                 </div>
+
+                {/* Recipes Section */}
+                <div className="mt-8 grid md:grid-cols-2 gap-8 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <div className="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 flex flex-col gap-6">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+                                <Utensils className="w-6 h-6 text-primary-500" />
+                                My Uploaded Recipes
+                            </h2>
+                            <span className="bg-primary-50 text-primary-600 text-xs font-bold px-2.5 py-1 rounded-full">{uploadedRecipes.length}</span>
+                        </div>
+                        {uploadedRecipes.length > 0 ? (
+                            <div className="space-y-4">
+                                {uploadedRecipes.slice(0, 3).map(recipe => (
+                                    <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100 group">
+                                        <img src={recipe.image} alt={recipe.title} className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform" />
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 line-clamp-1">{recipe.title}</h4>
+                                            <p className="text-sm text-gray-500">{recipe.difficulty} • {recipe.time}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                                {uploadedRecipes.length > 3 && (
+                                    <button onClick={() => setViewMode('uploaded')} className="w-full py-3 mt-2 text-sm font-bold text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-xl transition-colors">
+                                        View All ({uploadedRecipes.length})
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-gray-500 italic bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                You haven't uploaded any recipes yet.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-8 shadow-lg shadow-gray-200/50 flex flex-col gap-6">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+                                <Heart className="w-6 h-6 text-rose-500" />
+                                Saved Recipes
+                            </h2>
+                            <span className="bg-rose-50 text-rose-600 text-xs font-bold px-2.5 py-1 rounded-full">{savedRecipesData.length}</span>
+                        </div>
+                        {savedRecipesData.length > 0 ? (
+                            <div className="space-y-4">
+                                {savedRecipesData.slice(0, 3).map(recipe => (
+                                    <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100 group">
+                                        <img src={recipe.image} alt={recipe.title} className="w-16 h-16 rounded-lg object-cover group-hover:scale-105 transition-transform" />
+                                        <div>
+                                            <h4 className="font-bold text-gray-900 line-clamp-1">{recipe.title}</h4>
+                                            <p className="text-sm text-gray-500">{recipe.difficulty} • {recipe.time}</p>
+                                        </div>
+                                    </Link>
+                                ))}
+                                {savedRecipesData.length > 3 && (
+                                    <button onClick={() => setViewMode('saved')} className="w-full py-3 mt-2 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors">
+                                        View All ({savedRecipesData.length})
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-gray-500 italic bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                You haven't saved any recipes yet.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
             </div>
+
+            {/* Full Screen Grid Modal */}
+            {viewMode && (
+                <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden animate-slide-up">
+                    <div className={`p-4 sm:p-6 flex items-center justify-between shadow-sm z-10 ${viewMode === 'uploaded' ? 'bg-primary-500 text-white' : 'bg-rose-500 text-white'}`}>
+                        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                            {viewMode === 'uploaded' ? <Utensils className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+                            {viewMode === 'uploaded' ? 'My Uploaded Recipes' : 'Saved Recipes'}
+                            <span className="text-sm opacity-80 ml-2 bg-white/20 px-2 py-0.5 rounded-full">
+                                {viewMode === 'uploaded' ? uploadedRecipes.length : savedRecipesData.length}
+                            </span>
+                        </h2>
+                        <button
+                            onClick={() => setViewMode(null)}
+                            className="p-2 hover:bg-white/20 rounded-full transition-colors font-bold text-sm bg-white/10"
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-gray-50">
+                        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                            {(viewMode === 'uploaded' ? uploadedRecipes : savedRecipesData).map(recipe => (
+                                <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group flex flex-col items-center p-3 sm:p-4 text-center">
+                                    <div className="w-full aspect-square rounded-xl overflow-hidden mb-3 relative">
+                                        <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                                            <span className="text-white text-xs font-bold px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">View Recipe</span>
+                                        </div>
+                                    </div>
+                                    <h4 className="font-bold text-gray-900 line-clamp-2 w-full leading-tight text-sm sm:text-base">{recipe.title}</h4>
+                                    <p className="text-xs text-gray-500 mt-2 font-medium bg-gray-50 px-3 py-1 rounded-lg w-full truncate">{recipe.difficulty} • {recipe.time}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -12,6 +12,10 @@ import Favourites from './pages/Favourites';
 import Admin from './pages/Admin';
 import Categories from './pages/Categories';
 import Profile from './pages/Profile';
+import UploadRecipe from './pages/UploadRecipe';
+import CookProfile from './pages/CookProfile';
+import Feed from './pages/Feed';
+import Notifications from './pages/Notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -34,6 +38,10 @@ function AppContent() {
           <Route path="/favourites" element={<Favourites />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/user/:id" element={<CookProfile />} />
+          <Route path="/upload" element={<UploadRecipe />} />
+          <Route path="/notifications" element={<Notifications />} />
           {/* Additional routes will map here */}
         </Routes>
       </main>

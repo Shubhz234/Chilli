@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Search, ChefHat, ExternalLink, Star, RotateCcw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, ChefHat, ExternalLink, Star, RotateCcw, BadgeCheck } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const Admin = () => {
@@ -9,9 +9,13 @@ const Admin = () => {
         const saved = localStorage.getItem('chilli_recipes');
         return saved ? JSON.parse(saved) : initialRecipes;
     });
+    const [pendingRecipes, setPendingRecipes] = useState([]);
+    const [usersList, setUsersList] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showForm, setShowForm] = useState(false);
+    const [activeTab, setActiveTab] = useState('approved'); // 'approved', 'pending', 'users'
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, payload: null });
+    const [rejectReason, setRejectReason] = useState('');
 
     const [formData, setFormData] = useState({
         id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '',
@@ -28,6 +32,16 @@ const Admin = () => {
                 const data = await res.json();
                 setRecipes(data);
                 localStorage.setItem('chilli_recipes', JSON.stringify(data));
+
+                const pendingRes = await fetch('/api/recipes/pending');
+                const pendingData = await pendingRes.json();
+                setPendingRecipes(pendingData);
+
+                const usersRes = await fetch('/api/users');
+                if (usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    setUsersList(usersData);
+                }
             } catch (err) {
                 console.error('API Error:', err);
             }
@@ -121,6 +135,11 @@ const Admin = () => {
         setConfirmModal({ isOpen: true, type: 'delete', payload: id });
     };
 
+    const handleReject = (id) => {
+        setRejectReason('');
+        setConfirmModal({ isOpen: true, type: 'reject', payload: id });
+    };
+
     const handleResetRatings = (id) => {
         setConfirmModal({ isOpen: true, type: 'reset_ratings', payload: id });
     };
@@ -171,14 +190,60 @@ const Admin = () => {
             } catch (err) {
                 console.error("Reset ratings error", err);
             }
+        } else if (confirmModal.type === 'reject') {
+            try {
+                await fetch(`/api/recipes/${confirmModal.payload}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: rejectReason })
+                });
+                setPendingRecipes(pendingRecipes.filter(r => r.id !== confirmModal.payload));
+            } catch (err) {
+                console.error("Reject error", err);
+            }
         }
         setConfirmModal({ isOpen: false, type: null, payload: null });
     };
 
-    // Filter recipes based on search
-    const filteredRecipes = recipes.filter(r =>
+    // Filter recipes or users based on search
+    const filteredRecipes = (activeTab === 'approved' ? recipes : pendingRecipes).filter(r =>
         r.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const filteredUsers = usersList.filter(u =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleVerifyUser = async (id) => {
+        try {
+            const res = await fetch(`/api/users/${id}/verify`, { method: 'PUT' });
+            if (res.ok) {
+                const data = await res.json();
+                setUsersList(usersList.map(u => u._id === id ? { ...u, isVerified: data.isVerified } : u));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleApprove = async (id) => {
+        try {
+            const res = await fetch(`/api/recipes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'approved' })
+            });
+            if (res.ok) {
+                const updatedRecipe = await res.json();
+                const formattedRecipe = { ...updatedRecipe, id: updatedRecipe._id.toString() };
+                setPendingRecipes(pendingRecipes.filter(r => r.id !== id));
+                saveAndSync([formattedRecipe, ...recipes]);
+            }
+        } catch (err) {
+            console.error("Approve error", err);
+        }
+    };
 
     return (
         <div className="min-h-screen pt-24 pb-12 relative z-0">
@@ -430,7 +495,32 @@ const Admin = () => {
                 <div className="liquid-card overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
 
                     <div className="p-6 border-b border-gray-100 bg-white/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <h2 className="text-xl font-bold text-gray-900">Manage Recipes</h2>
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-xl font-bold text-gray-900">Manage Recipes</h2>
+                            <div className="bg-gray-100 p-1 rounded-xl flex items-center">
+                                <button
+                                    onClick={() => setActiveTab('approved')}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'approved' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    Approved
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('pending')}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center ${activeTab === 'pending' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    Pending
+                                    {pendingRecipes.length > 0 && (
+                                        <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-[10px] rounded-full">{pendingRecipes.length}</span>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('users')}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'users' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                >
+                                    Users
+                                </button>
+                            </div>
+                        </div>
                         <div className="relative w-full sm:w-72">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Search className="h-5 w-5 text-gray-400" />
@@ -446,86 +536,150 @@ const Admin = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                                    <th className="p-4 font-semibold">Recipe</th>
-                                    <th className="p-4 font-semibold">Category</th>
-                                    <th className="p-4 font-semibold">Rating</th>
-                                    <th className="p-4 font-semibold">Difficulty</th>
-                                    <th className="p-4 font-semibold text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {filteredRecipes.map((recipe) => (
-                                    <tr key={recipe.id} className="hover:bg-gray-50/50 transition-colors group">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-4">
-                                                <img src={recipe.image} alt={recipe.title} className="w-12 h-12 rounded-lg object-cover shadow-sm" />
-                                                <div>
-                                                    <p className="font-bold text-gray-900">{recipe.title}</p>
-                                                    <p className="text-xs text-gray-500 mt-1">{recipe.time}</p>
+                        {activeTab === 'users' ? (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                                        <th className="p-4 font-semibold">User</th>
+                                        <th className="p-4 font-semibold">Email</th>
+                                        <th className="p-4 font-semibold">Status</th>
+                                        <th className="p-4 font-semibold text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {filteredUsers.map((u) => (
+                                        <tr key={u._id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-4">
+                                                    <img src={u.profilePhoto || "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix"} alt={u.name} className="w-10 h-10 rounded-full object-cover shadow-sm bg-gray-100 border border-gray-200" />
+                                                    <div>
+                                                        <p className="font-bold text-gray-900 flex items-center gap-1">
+                                                            {u.name}
+                                                            {(u.isVerified || u.isAdmin) && <BadgeCheck className="w-4 h-4 text-primary-500" />}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">{u.followers?.length || 0} followers</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold">
-                                                {recipe.category}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-1.5 text-gray-700">
-                                                <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
-                                                <span className="font-bold">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
-                                                <span className="text-gray-400 text-xs">({recipe.numReviews || 0})</span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className="text-sm font-medium text-gray-700">
-                                                {recipe.difficulty}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            </td>
+                                            <td className="p-4 text-sm text-gray-600">{u.email}</td>
+                                            <td className="p-4">
+                                                {u.isAdmin ? (
+                                                    <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Admin</span>
+                                                ) : u.isVerified ? (
+                                                    <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Verified Pro</span>
+                                                ) : (
+                                                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Standard</span>
+                                                )}
+                                            </td>
+                                            <td className="p-4 text-right">
                                                 <button
-                                                    onClick={() => navigate(`/recipe/${recipe.id}`)}
-                                                    className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="View"
+                                                    onClick={() => handleVerifyUser(u._id)}
+                                                    className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors ${u.isVerified ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
                                                 >
-                                                    <ExternalLink className="w-4 h-4" />
+                                                    {u.isVerified ? 'Remove Verification' : 'Verify Cook'}
                                                 </button>
-                                                <button
-                                                    onClick={() => handleResetRatings(recipe.id)}
-                                                    className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Reset Ratings"
-                                                >
-                                                    <RotateCcw className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEdit(recipe)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"
-                                                >
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(recipe.id)}
-                                                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredUsers.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" className="p-8 text-center text-gray-500">No users found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                                        <th className="p-4 font-semibold">Recipe</th>
+                                        <th className="p-4 font-semibold">Category</th>
+                                        <th className="p-4 font-semibold">Rating</th>
+                                        <th className="p-4 font-semibold">Difficulty</th>
+                                        <th className="p-4 font-semibold text-right">Actions</th>
                                     </tr>
-                                ))}
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {filteredRecipes.map((recipe) => (
+                                        <tr key={recipe.id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-4">
+                                                    <img src={recipe.image} alt={recipe.title} className="w-12 h-12 rounded-lg object-cover shadow-sm" />
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{recipe.title}</p>
+                                                        <p className="text-xs text-gray-500 mt-1">{recipe.time}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className="px-3 py-1 bg-primary-50 text-primary-700 rounded-full text-xs font-semibold">
+                                                    {recipe.category}
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-1.5 text-gray-700">
+                                                    <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
+                                                    <span className="font-bold">{recipe.rating ? recipe.rating.toFixed(1) : 'New'}</span>
+                                                    <span className="text-gray-400 text-xs">({recipe.numReviews || 0})</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    {recipe.difficulty}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {activeTab === 'pending' ? (
+                                                        <>
+                                                            <button onClick={() => handleApprove(recipe.id)} className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg hover:bg-green-200 transition-colors">Approve</button>
+                                                            <button onClick={() => handleReject(recipe.id)} className="px-3 py-1 bg-rose-100 text-rose-700 text-xs font-bold rounded-lg hover:bg-rose-200 transition-colors">Reject</button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                onClick={() => navigate(`/recipe/${recipe.id}`)}
+                                                                className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="View"
+                                                            >
+                                                                <ExternalLink className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleResetRatings(recipe.id)}
+                                                                className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Reset Ratings"
+                                                            >
+                                                                <RotateCcw className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleEdit(recipe)}
+                                                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(recipe.id)}
+                                                                className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Delete"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
 
-                                {filteredRecipes.length === 0 && (
-                                    <tr>
-                                        <td colSpan="4" className="p-8 text-center text-gray-500">
-                                            No recipes found matching your search.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                                    {filteredRecipes.length === 0 && (
+                                        <tr>
+                                            <td colSpan="5" className="p-8 text-center text-gray-500">
+                                                No recipes found matching your criteria.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
+
                 </div>
 
             </div>
@@ -540,7 +694,17 @@ const Admin = () => {
                                 {confirmModal.type === 'delete' && "This action cannot be undone. Are you sure you want to permanently delete this recipe?"}
                                 {confirmModal.type === 'edit' && "You are about to edit this recipe's details. Proceed?"}
                                 {confirmModal.type === 'reset_ratings' && "Are you sure you want to reset and permanently delete ALL ratings and reviews for this recipe? This cannot be undone."}
+                                {confirmModal.type === 'reject' && "Provide a reason for rejecting this recipe. The author will be notified."}
                             </p>
+                            {confirmModal.type === 'reject' && (
+                                <textarea
+                                    className="w-full mt-4 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                    rows="3"
+                                    placeholder="e.g. Needs better instructions..."
+                                    value={rejectReason}
+                                    onChange={(e) => setRejectReason(e.target.value)}
+                                ></textarea>
+                            )}
                         </div>
                         <div className="flex gap-3 justify-end">
                             <button
@@ -551,7 +715,7 @@ const Admin = () => {
                             </button>
                             <button
                                 onClick={executeConfirmAction}
-                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete' || confirmModal.type === 'reset_ratings'
+                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete' || confirmModal.type === 'reset_ratings' || confirmModal.type === 'reject'
                                     ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/30'
                                     : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
                                     }`}
@@ -559,6 +723,7 @@ const Admin = () => {
                                 {confirmModal.type === 'delete' && 'Yes, Delete'}
                                 {confirmModal.type === 'reset_ratings' && 'Yes, Reset Ratings'}
                                 {confirmModal.type === 'edit' && 'Yes, Edit'}
+                                {confirmModal.type === 'reject' && 'Yes, Reject'}
                             </button>
                         </div>
                     </div>

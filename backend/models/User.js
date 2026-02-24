@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+const notificationSchema = new mongoose.Schema({
+    type: { type: String, required: true },
+    message: { type: String, required: true },
+    reason: { type: String },
+    read: { type: Boolean, default: false },
+    link: { type: String }
+}, { timestamps: true });
+
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -12,7 +20,14 @@ const userSchema = new mongoose.Schema({
     dietaryPreference: { type: String },
     allergies: { type: String },
     extras: { type: String },
-    isAdmin: { type: Boolean, default: false }
+    isAdmin: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    bio: { type: String, default: "Home cook" },
+    profilePhoto: { type: String, default: "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix" },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
+    notifications: [notificationSchema]
 }, {
     timestamps: true
 });

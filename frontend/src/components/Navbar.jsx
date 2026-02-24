@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChefHat, Search, User, Menu, X } from 'lucide-react';
+import { ChefHat, Search, User, Menu, X, Plus, Activity, Bell, CheckCircle2 } from 'lucide-react';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -10,6 +10,9 @@ const Navbar = () => {
     const [user, setUser] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
+
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     React.useEffect(() => {
         const checkUser = () => {
@@ -29,6 +32,34 @@ const Navbar = () => {
             window.removeEventListener('authStatusChanged', checkUser);
         };
     }, []);
+
+    React.useEffect(() => {
+        if (!user?.id) return;
+        const fetchNotifications = async () => {
+            try {
+                const res = await fetch(`/api/users/${user.id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotifications((data.notifications || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+                    setUnreadCount((data.notifications || []).filter(n => !n.read).length);
+                }
+            } catch (err) { }
+        };
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 15000);
+        return () => clearInterval(interval);
+    }, [user?.id]);
+
+    const handleMarkRead = async () => {
+        if (!user?.id) return;
+        try {
+            await fetch(`/api/users/${user.id}/notifications/read`, { method: 'PUT' });
+            setNotifications(notifications.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const baseNavLinks = [
         { name: 'Home', path: '/' },
@@ -129,13 +160,40 @@ const Navbar = () => {
                                 </button>
                             )}
                             {user ? (
-                                <Link
-                                    to="/profile"
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 bg-primary-50 text-primary-600 transition-all text-sm font-bold shadow-sm"
-                                >
-                                    <User className="w-4 h-4" />
-                                    {user.name.split(' ')[0]}
-                                </Link>
+                                <div className="flex items-center gap-3 relative">
+                                    <Link
+                                        to="/notifications"
+                                        className="relative p-2 text-gray-600 hover:text-primary-500 hover:bg-primary-50 rounded-full transition-colors"
+                                    >
+                                        <Bell className="w-5 h-5" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+                                        )}
+                                    </Link>
+                                    <Link
+                                        to="/feed"
+                                        className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 bg-white text-gray-700 transition-all text-sm font-bold shadow-sm hover:text-primary-600"
+                                    >
+                                        <Activity className="w-4 h-4" />
+                                        Feed
+                                    </Link>
+                                    {!user?.isAdmin && (
+                                        <Link
+                                            to="/upload"
+                                            className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-all text-sm font-bold shadow-sm"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Upload
+                                        </Link>
+                                    )}
+                                    <Link
+                                        to="/profile"
+                                        className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 hover:border-primary-500 bg-primary-50 text-primary-600 transition-all text-sm font-bold shadow-sm"
+                                    >
+                                        <User className="w-4 h-4" />
+                                        {user.name.split(' ')[0]}
+                                    </Link>
+                                </div>
                             ) : (
                                 <Link
                                     to="/login"
@@ -189,14 +247,34 @@ const Navbar = () => {
                     ))}
                     <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                         {user ? (
-                            <Link
-                                to="/profile"
-                                className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-colors"
-                                onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                                <User className="w-4 h-4" />
-                                View Profile
-                            </Link>
+                            <div className="flex flex-col gap-3 w-full">
+                                <Link
+                                    to="/feed"
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <Activity className="w-4 h-4" />
+                                    My Feed
+                                </Link>
+                                {!user?.isAdmin && (
+                                    <Link
+                                        to="/upload"
+                                        className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full border border-primary-500 text-primary-600 hover:bg-primary-50 transition-colors"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Upload Recipe
+                                    </Link>
+                                )}
+                                <Link
+                                    to="/profile"
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-2 rounded-full bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    <User className="w-4 h-4" />
+                                    View Profile
+                                </Link>
+                            </div>
                         ) : (
                             <Link
                                 to="/login"
