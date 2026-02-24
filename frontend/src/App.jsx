@@ -15,7 +15,7 @@ import Profile from './pages/Profile';
 
 function AppContent() {
   const location = useLocation();
-  const isChilliAI = location.pathname === '/chilli-ai';
+  const isHome = location.pathname === '/';
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-gray-900 bg-white">
@@ -37,7 +37,7 @@ function AppContent() {
           {/* Additional routes will map here */}
         </Routes>
       </main>
-      {!isChilliAI && <Footer />}
+      {isHome && <Footer />}
     </div>
   );
 }
