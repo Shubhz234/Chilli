@@ -55,7 +55,7 @@ const Categories = () => {
                                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-90 group-hover:opacity-100 transition-opacity duration-300`}></div>
                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300"></div>
 
-                                <div className="relative z-10 flex flex-col items-center gap-4 text-white transform group-hover:scale-110 transition-transform duration-300">
+                                <div className="relative z-10 flex flex-col items-center gap-4 text-white transform group-hover:scale-110 transition-transform duration-300 transform-gpu">
                                     <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl shadow-lg">
                                         <Icon className="w-10 h-10 lg:w-12 lg:h-12" />
                                     </div>

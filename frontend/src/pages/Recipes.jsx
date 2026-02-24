@@ -126,7 +126,7 @@ const Recipes = () => {
                                 <img
                                     src={recipe.image}
                                     alt={recipe.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 transform-gpu"
                                 />
                                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
                                     <Star className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
