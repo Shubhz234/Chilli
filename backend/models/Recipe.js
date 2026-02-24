@@ -22,7 +22,13 @@ const recipeSchema = new mongoose.Schema({
     videoUrl: { type: String },
     description: { type: String },
     ingredients: [{ type: String }],
-    steps: [{ type: String }]
+    steps: [{ type: String }],
+    region: { type: String, default: 'Global' },
+    dietType: { type: String, default: 'Any' },
+    calories: { type: Number, default: 0 },
+    protein: { type: Number, default: 0 },
+    carbs: { type: Number, default: 0 },
+    fat: { type: Number, default: 0 }
 }, {
     timestamps: true
 });

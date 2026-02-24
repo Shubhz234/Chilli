@@ -37,7 +37,7 @@ export const getRecipeById = async (req, res) => {
 // @access  Private/Admin (Will add auth middleware later)
 export const createRecipe = async (req, res) => {
     try {
-        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps } = req.body;
+        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps, region, dietType, calories, protein, carbs, fat } = req.body;
 
         const recipe = new Recipe({
             title,
@@ -49,7 +49,13 @@ export const createRecipe = async (req, res) => {
             videoUrl,
             description,
             ingredients,
-            steps
+            steps,
+            region: region || 'Global',
+            dietType: dietType || 'Any',
+            calories: calories || 0,
+            protein: protein || 0,
+            carbs: carbs || 0,
+            fat: fat || 0
         });
 
         const createdRecipe = await recipe.save();
@@ -68,7 +74,7 @@ export const updateRecipe = async (req, res) => {
             return res.status(404).json({ message: 'Recipe not found' });
         }
 
-        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps } = req.body;
+        const { title, category, time, difficulty, servings, image, videoUrl, description, ingredients, steps, region, dietType, calories, protein, carbs, fat } = req.body;
 
         const recipe = await Recipe.findById(req.params.id);
 
@@ -81,6 +87,12 @@ export const updateRecipe = async (req, res) => {
             recipe.image = image || recipe.image;
             recipe.videoUrl = videoUrl || recipe.videoUrl;
             recipe.description = description || recipe.description;
+            recipe.region = region || recipe.region;
+            recipe.dietType = dietType || recipe.dietType;
+            if (calories !== undefined) recipe.calories = calories;
+            if (protein !== undefined) recipe.protein = protein;
+            if (carbs !== undefined) recipe.carbs = carbs;
+            if (fat !== undefined) recipe.fat = fat;
             // Update arrays only if provided
             if (ingredients) recipe.ingredients = ingredients;
             if (steps) recipe.steps = steps;

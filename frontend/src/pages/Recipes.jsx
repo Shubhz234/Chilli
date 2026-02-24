@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Clock, Flame, Star, Filter } from 'lucide-react';
+import { Search, Clock, Flame, Star, Filter, Dices } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 const Recipes = () => {
@@ -11,6 +11,7 @@ const Recipes = () => {
     });
     const [searchTerm, setSearchTerm] = useState(location.state?.searchTerm || '');
     const [activeCategory, setActiveCategory] = useState(location.state?.category || 'All');
+    const navigate = require('react-router-dom').useNavigate();
 
     useEffect(() => {
         const fetchRecipes = async () => {
@@ -35,12 +36,25 @@ const Recipes = () => {
         }
     }, [location.state]);
 
-    const categories = ['All', 'Indian', 'Italian', 'Chinese', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Seafood', 'Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Vegan', 'Quick & Easy'];
+    const categories = ['All', 'Indian', 'Maharashtrian', 'Punjabi', 'South Indian', 'Gujarati', 'Bengal', 'Street Food', 'Italian', 'Chinese', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Seafood', 'Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Vegan', 'Quick & Easy'];
+
+    const handleSurpriseMe = () => {
+        if (recipes.length > 0) {
+            const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+            navigate(`/recipe/${randomRecipe.id}`);
+        }
+    };
 
     const filteredRecipes = recipes.filter(recipe => {
         const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
             recipe.ingredients.some(i => i.toLowerCase().includes(searchTerm.toLowerCase()));
-        const matchesCategory = activeCategory === 'All' || recipe.category === activeCategory;
+
+        // Match standard category, new region, or new diet type
+        const matchesCategory = activeCategory === 'All' ||
+            recipe.category === activeCategory ||
+            recipe.region === activeCategory ||
+            recipe.dietType === activeCategory;
+
         return matchesSearch && matchesCategory;
     });
 
@@ -67,9 +81,16 @@ const Recipes = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button className="flex items-center justify-center gap-2 px-6 py-4 glass-panel rounded-2xl text-gray-900 hover:text-primary-700 transition-colors font-bold">
+                        <button className="hidden md:flex items-center justify-center gap-2 px-6 py-4 glass-panel rounded-2xl text-gray-900 hover:text-primary-700 transition-colors font-bold">
                             <Filter className="w-5 h-5" />
                             Filters
+                        </button>
+                        <button
+                            onClick={handleSurpriseMe}
+                            className="flex items-center justify-center gap-2 px-6 py-4 bg-primary-600 rounded-2xl text-white hover:bg-primary-500 transition-colors font-bold shadow-lg shadow-primary-500/30"
+                        >
+                            <Dices className="w-5 h-5" />
+                            Surprise Me
                         </button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare } from 'lucide-react';
+import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare, X, Printer, ShoppingCart, Activity, ChevronRight, ChevronLeft, MapPin } from 'lucide-react';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 // Helper to convert standard YouTube links into embeddable iframe links
@@ -26,6 +26,10 @@ const RecipeDetail = () => {
     const [isFavourite, setIsFavourite] = useState(false);
     const [showShareTooltip, setShowShareTooltip] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    // New Feature States
+    const [cookMode, setCookMode] = useState(false);
+    const [cookStep, setCookStep] = useState(0);
 
     const user = JSON.parse(localStorage.getItem('chilli_user'));
     const [rating, setRating] = useState(0);
@@ -151,6 +155,31 @@ const RecipeDetail = () => {
         }
     };
 
+    const handleGenerateGroceryList = () => {
+        const text = `Grocery List for ${recipe.title}:\n\n` + recipe.ingredients.map(i => `[ ] ${i}`).join('\n');
+
+        // Create a fake print window to download PDF/Print
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html><head><title>Grocery List - Chilli</title>
+            <style>body{font-family:sans-serif; padding:40px; line-height:1.6;} h1{color:#ff4500;} ul{list-style:none; padding:0;} li{margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;} input{margin-right:10px;}</style>
+            </head><body>
+            <h1>🛒 ${recipe.title} Grocery List</h1>
+            <ul>${recipe.ingredients.map(i => `<li><input type="checkbox"> ${i}</li>`).join('')}</ul>
+            <script>window.print();</script>
+            </body></html>
+        `);
+        printWindow.document.close();
+    };
+
+    const nextCookStep = () => {
+        if (cookStep < recipe.steps.length - 1) setCookStep(cookStep + 1);
+    };
+
+    const prevCookStep = () => {
+        if (cookStep > 0) setCookStep(cookStep - 1);
+    };
+
     return (
         <div className="min-h-screen pb-20 relative z-0">
             {/* Hero Header */}
@@ -246,164 +275,275 @@ const RecipeDetail = () => {
                             <p className="font-bold text-lg">{recipe.servings || 4} People</p>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:gap-12">
-                    {/* Main Content: Steps and Video */}
-                    <div className="lg:col-span-2 space-y-8 lg:space-y-12 order-2 lg:order-1 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                    {recipe.calories > 0 && (
+                        <div className="bg-white rounded-3xl p-6 sm:px-12 mb-12 flex flex-wrap gap-8 sm:justify-between items-center shadow-lg border border-gray-100">
+                            <div className="flex items-center gap-3 w-full sm:w-auto text-primary-600 font-bold">
+                                <Activity className="w-5 h-5" /> Nutrition Facts
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-500 text-sm">Calories:</span>
+                                <span className="font-bold text-gray-900">{recipe.calories} kcal</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-500 text-sm">Protein:</span>
+                                <span className="font-bold text-gray-900">{recipe.protein}g</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-500 text-sm">Carbs:</span>
+                                <span className="font-bold text-gray-900">{recipe.carbs}g</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-500 text-sm">Fat:</span>
+                                <span className="font-bold text-gray-900">{recipe.fat}g</span>
+                            </div>
+                        </div>
+                    )}
 
-                        {/* Video Section */}
-                        {recipe.videoUrl && (
-                            <section className="liquid-card p-6">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <PlayCircle className="w-6 h-6 text-primary-500" />
-                                    <h2 className="text-2xl font-bold text-gray-900">Watch & Learn</h2>
+                    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:gap-12">
+                        {/* Main Content: Steps and Video */}
+                        <div className="lg:col-span-2 space-y-8 lg:space-y-12 order-2 lg:order-1 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+
+                            {/* Video Section */}
+                            {recipe.videoUrl && (
+                                <section className="liquid-card p-6">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <PlayCircle className="w-6 h-6 text-primary-500" />
+                                        <h2 className="text-2xl font-bold text-gray-900">Watch & Learn</h2>
+                                    </div>
+                                    <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-gray-900">
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            src={getEmbedUrl(recipe.videoUrl)}
+                                            title="YouTube video player"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            className="w-full h-full"
+                                        ></iframe>
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Instructions Section */}
+                            <section className="liquid-card p-8">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-gray-100 gap-4">
+                                    <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                        <ChefHat className="w-6 h-6 text-primary-500" />
+                                        Instructions
+                                    </h2>
+                                    <button
+                                        onClick={() => setCookMode(true)}
+                                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition-colors"
+                                    >
+                                        <PlayCircle className="w-5 h-5" /> Enter Cook Mode
+                                    </button>
                                 </div>
-                                <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-lg bg-gray-900">
-                                    <iframe
-                                        width="100%"
-                                        height="100%"
-                                        src={getEmbedUrl(recipe.videoUrl)}
-                                        title="YouTube video player"
-                                        frameBorder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        className="w-full h-full"
-                                    ></iframe>
+                                <div className="space-y-8">
+                                    {recipe.steps.map((step, index) => (
+                                        <div key={index} className="flex gap-6 group">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-10 h-10 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-bold text-lg mb-2 group-hover:bg-primary-500 group-hover:text-white transition-colors border-2 border-primary-100 shadow-sm">
+                                                    {index + 1}
+                                                </div>
+                                                {index !== recipe.steps.length - 1 && (
+                                                    <div className="w-0.5 h-full bg-gray-100 group-hover:bg-primary-100 transition-colors"></div>
+                                                )}
+                                            </div>
+                                            <div className="py-2 flex-1 pb-8">
+                                                <p className="text-gray-700 leading-relaxed text-lg">{step}</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </section>
-                        )}
 
-                        {/* Instructions Section */}
-                        <section className="liquid-card p-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-                                <ChefHat className="w-6 h-6 text-primary-500" />
-                                Instructions
-                            </h2>
-                            <div className="space-y-8">
-                                {recipe.steps.map((step, index) => (
-                                    <div key={index} className="flex gap-6 group">
-                                        <div className="flex flex-col items-center">
-                                            <div className="w-10 h-10 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-bold text-lg mb-2 group-hover:bg-primary-500 group-hover:text-white transition-colors border-2 border-primary-100 shadow-sm">
-                                                {index + 1}
-                                            </div>
-                                            {index !== recipe.steps.length - 1 && (
-                                                <div className="w-0.5 h-full bg-gray-100 group-hover:bg-primary-100 transition-colors"></div>
-                                            )}
-                                        </div>
-                                        <div className="py-2 flex-1 pb-8">
-                                            <p className="text-gray-700 leading-relaxed text-lg">{step}</p>
-                                        </div>
+                            {/* Reviews & Ratings Section */}
+                            <section className="liquid-card p-8">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                                    <MessageSquare className="w-6 h-6 text-primary-500" />
+                                    Reviews ({recipe.numReviews || 0})
+                                </h2>
+
+                                {/* Add Review Form */}
+                                <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+                                    <h3 className="font-bold text-gray-900 mb-4">Leave a Review</h3>
+                                    <div className="flex mb-4">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                onClick={() => setRating(star)}
+                                                onMouseEnter={() => setHoverRating(star)}
+                                                onMouseLeave={() => setHoverRating(0)}
+                                                className="p-1 transition-transform hover:scale-110"
+                                            >
+                                                <Star
+                                                    className={`w-8 h-8 transition-colors ${star <= (hoverRating || rating)
+                                                        ? 'text-orange-400 fill-orange-400'
+                                                        : 'text-gray-300'
+                                                        }`}
+                                                />
+                                            </button>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </section>
-
-                        {/* Reviews & Ratings Section */}
-                        <section className="liquid-card p-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-                                <MessageSquare className="w-6 h-6 text-primary-500" />
-                                Reviews ({recipe.numReviews || 0})
-                            </h2>
-
-                            {/* Add Review Form */}
-                            <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
-                                <h3 className="font-bold text-gray-900 mb-4">Leave a Review</h3>
-                                <div className="flex mb-4">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setRating(star)}
-                                            onMouseEnter={() => setHoverRating(star)}
-                                            onMouseLeave={() => setHoverRating(0)}
-                                            className="p-1 transition-transform hover:scale-110"
-                                        >
-                                            <Star
-                                                className={`w-8 h-8 transition-colors ${star <= (hoverRating || rating)
-                                                    ? 'text-orange-400 fill-orange-400'
-                                                    : 'text-gray-300'
-                                                    }`}
-                                            />
-                                        </button>
-                                    ))}
+                                    <textarea
+                                        value={reviewComment}
+                                        onChange={(e) => setReviewComment(e.target.value)}
+                                        placeholder="Share your thoughts about this recipe... (optional)"
+                                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 transition-all resize-none mb-4"
+                                        rows="3"
+                                    ></textarea>
+                                    <button
+                                        onClick={submitReview}
+                                        className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-md hover:bg-primary-500 transition-colors"
+                                    >
+                                        Submit Review
+                                    </button>
                                 </div>
-                                <textarea
-                                    value={reviewComment}
-                                    onChange={(e) => setReviewComment(e.target.value)}
-                                    placeholder="Share your thoughts about this recipe... (optional)"
-                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 transition-all resize-none mb-4"
-                                    rows="3"
-                                ></textarea>
-                                <button
-                                    onClick={submitReview}
-                                    className="px-6 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-md hover:bg-primary-500 transition-colors"
-                                >
-                                    Submit Review
-                                </button>
-                            </div>
 
-                            {/* Reviews List */}
-                            {recipe.reviews && recipe.reviews.length > 0 ? (
-                                <div className="space-y-6">
-                                    {recipe.reviews.map((review, index) => (
-                                        <div key={index} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="font-bold text-gray-900">{review.name}</div>
-                                                <div className="flex items-center text-orange-400 gap-1">
-                                                    <span className="font-bold text-sm">{review.rating}</span>
-                                                    <Star className="w-4 h-4 fill-current" />
+                                {/* Reviews List */}
+                                {recipe.reviews && recipe.reviews.length > 0 ? (
+                                    <div className="space-y-6">
+                                        {recipe.reviews.map((review, index) => (
+                                            <div key={index} className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="font-bold text-gray-900">{review.name}</div>
+                                                    <div className="flex items-center text-orange-400 gap-1">
+                                                        <span className="font-bold text-sm">{review.rating}</span>
+                                                        <Star className="w-4 h-4 fill-current" />
+                                                    </div>
+                                                </div>
+                                                {review.comment && <p className="text-gray-700">{review.comment}</p>}
+                                                <div className="text-xs text-gray-400 mt-2">
+                                                    {new Date(review.createdAt).toLocaleDateString()}
                                                 </div>
                                             </div>
-                                            {review.comment && <p className="text-gray-700">{review.comment}</p>}
-                                            <div className="text-xs text-gray-400 mt-2">
-                                                {new Date(review.createdAt).toLocaleDateString()}
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center text-gray-500 italic py-4">No reviews yet. Be the first to rate!</div>
+                                )}
+                            </section>
+                        </div>
+
+                        {/* Sidebar: Ingredients */}
+                        <div className="lg:col-span-1 order-1 lg:order-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+
+                            {/* Region & Diet Details */}
+                            <div className="liquid-card p-6 mb-6 flex flex-col gap-4">
+                                <div className="flex items-center gap-3">
+                                    <MapPin className="w-5 h-5 text-gray-400" />
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Region</p>
+                                        <p className="font-medium text-gray-900">{recipe.region || 'Global'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-5 h-5 flex items-center justify-center">🥗</div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Dietary Preference</p>
+                                        <p className="font-medium text-gray-900">{recipe.dietType || 'Any'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="sticky top-24 liquid-card p-8">
+                                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <span>Ingredients</span>
+                                        <span className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full ml-1">
+                                            {recipe.ingredients.length}
+                                        </span>
+                                    </h3>
+                                    <button
+                                        onClick={handleGenerateGroceryList}
+                                        title="Generate Grocery List"
+                                        className="p-2 text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                                    >
+                                        <ShoppingCart className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                <ul className="space-y-4 mb-8">
+                                    {recipe.ingredients.map((ingredient, i) => (
+                                        <li key={i} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer group">
+                                            <div className="mt-0.5 w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center flex-shrink-0 group-hover:border-primary-500 group-hover:bg-primary-50 transition-colors hidden sm:flex">
+                                                <Check className="w-3 h-3 text-transparent group-hover:text-primary-600 transition-colors" />
                                             </div>
-                                        </div>
+                                            <span className="text-gray-700 font-medium group-hover:text-gray-900">{ingredient}</span>
+                                        </li>
                                     ))}
-                                </div>
-                            ) : (
-                                <div className="text-center text-gray-500 italic py-4">No reviews yet. Be the first to rate!</div>
-                            )}
-                        </section>
-                    </div>
+                                </ul>
 
-                    {/* Sidebar: Ingredients */}
-                    <div className="lg:col-span-1 order-1 lg:order-2 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                        <div className="sticky top-24 liquid-card p-8">
-                            <h3 className="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-100 flex items-center justify-between">
-                                Ingredients
-                                <span className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                                    {recipe.ingredients.length} items
-                                </span>
-                            </h3>
-
-                            <ul className="space-y-4 mb-8">
-                                {recipe.ingredients.map((ingredient, i) => (
-                                    <li key={i} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer group">
-                                        <div className="mt-0.5 w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center flex-shrink-0 group-hover:border-primary-500 group-hover:bg-primary-50 transition-colors hidden sm:flex">
-                                            <Check className="w-3 h-3 text-transparent group-hover:text-primary-600 transition-colors" />
-                                        </div>
-                                        <span className="text-gray-700 font-medium group-hover:text-gray-900">{ingredient}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100 flex items-start gap-4">
-                                <div className="p-2 bg-orange-100 text-orange-600 rounded-xl">
-                                    <ChefHat className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-orange-900 text-sm mb-1">Chilli's Tip</h4>
-                                    <p className="text-xs text-orange-800 leading-relaxed">
-                                        Missing an ingredient? Use the AI Assistant to find a perfect substitution without ruining the dish!
-                                    </p>
+                                <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100 flex items-start gap-4">
+                                    <div className="p-2 bg-orange-100 text-orange-600 rounded-xl">
+                                        <ChefHat className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-orange-900 text-sm mb-1">Chilli's Tip</h4>
+                                        <p className="text-xs text-orange-800 leading-relaxed">
+                                            Missing an ingredient? Use the AI Assistant to find a perfect substitution without ruining the dish!
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Cook Mode Modal */}
+            {cookMode && (
+                <div className="fixed inset-0 z-50 bg-white flex flex-col text-gray-900 overflow-hidden animate-fade-in">
+                    {/* Progress Bar */}
+                    <div className="w-full h-2 bg-gray-100">
+                        <div
+                            className="h-full bg-primary-500 transition-all duration-300"
+                            style={{ width: `${((cookStep + 1) / recipe.steps.length) * 100}%` }}
+                        ></div>
+                    </div>
+
+                    <div className="p-6 flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-gray-500">Cook Mode</h2>
+                        <button
+                            onClick={() => { setCookMode(false); setCookStep(0); }}
+                            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto px-6 py-10 flex flex-col items-center justify-center">
+                        <div className="max-w-3xl w-full text-center">
+                            <span className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 font-bold rounded-full text-sm mb-6">
+                                Step {cookStep + 1} of {recipe.steps.length}
+                            </span>
+                            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-12">
+                                {recipe.steps[cookStep]}
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div className="p-6 flex items-center justify-between bg-white border-t border-gray-100 max-w-5xl mx-auto w-full">
+                        <button
+                            onClick={prevCookStep}
+                            disabled={cookStep === 0}
+                            className={`flex items-center gap-2 px-6 py-4 rounded-xl font-bold transition-colors ${cookStep === 0 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
+                        >
+                            <ChevronLeft className="w-5 h-5" /> Previous
+                        </button>
+                        <button
+                            onClick={nextCookStep}
+                            disabled={cookStep === recipe.steps.length - 1}
+                            className={`flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-colors shadow-lg ${cookStep === recipe.steps.length - 1 ? 'opacity-50 cursor-not-allowed bg-primary-300 text-white shadow-none' : 'bg-primary-600 hover:bg-primary-500 text-white'}`}
+                        >
+                            Next Step <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

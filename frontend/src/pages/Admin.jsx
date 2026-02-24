@@ -15,7 +15,7 @@ const Admin = () => {
 
     const [formData, setFormData] = useState({
         id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '',
-        description: '', ingredients: '', steps: ''
+        description: '', ingredients: '', steps: '', region: 'Global', dietType: 'Any', calories: 0, protein: 0, carbs: 0, fat: 0
     });
 
     useEffect(() => {
@@ -65,7 +65,13 @@ const Admin = () => {
             videoUrl: formData.videoUrl,
             description: formData.description,
             ingredients: ingredientsArray,
-            steps: stepsArray.length > 0 ? stepsArray : ['Mock step 1', 'Mock step 2']
+            steps: stepsArray.length > 0 ? stepsArray : ['Mock step 1', 'Mock step 2'],
+            region: formData.region,
+            dietType: formData.dietType,
+            calories: Number(formData.calories) || 0,
+            protein: Number(formData.protein) || 0,
+            carbs: Number(formData.carbs) || 0,
+            fat: Number(formData.fat) || 0
         };
 
         if (formData.id) {
@@ -104,7 +110,7 @@ const Admin = () => {
         }
 
         setShowForm(false);
-        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+        setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '', region: 'Global', dietType: 'Any', calories: 0, protein: 0, carbs: 0, fat: 0 });
     };
 
     const handleEdit = (recipe) => {
@@ -142,7 +148,13 @@ const Admin = () => {
                 videoUrl: recipe.videoUrl || '',
                 description: recipe.description,
                 ingredients: recipe.ingredients ? recipe.ingredients.join('\n') : '',
-                steps: recipe.steps ? recipe.steps.join('\n') : ''
+                steps: recipe.steps ? recipe.steps.join('\n') : '',
+                region: recipe.region || 'Global',
+                dietType: recipe.dietType || 'Any',
+                calories: recipe.calories || 0,
+                protein: recipe.protein || 0,
+                carbs: recipe.carbs || 0,
+                fat: recipe.fat || 0
             });
             setShowForm(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -183,7 +195,7 @@ const Admin = () => {
                         onClick={() => {
                             if (showForm) {
                                 setShowForm(false);
-                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '' });
+                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '', region: 'Global', dietType: 'Any', calories: 0, protein: 0, carbs: 0, fat: 0 });
                             } else {
                                 setShowForm(true);
                             }
@@ -280,6 +292,56 @@ const Admin = () => {
                                             className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
                                             placeholder="e.g. 4"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Region</label>
+                                        <select
+                                            value={formData.region}
+                                            onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
+                                        >
+                                            <optgroup label="Global">
+                                                <option value="Global">Global / Generic</option>
+                                            </optgroup>
+                                            <optgroup label="Indian Regional">
+                                                {['Maharashtrian', 'Punjabi', 'South Indian', 'Gujarati', 'Bengali', 'Street Food'].map(r => (
+                                                    <option key={r} value={r}>{r}</option>
+                                                ))}
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Diet Type</label>
+                                        <select
+                                            value={formData.dietType}
+                                            onChange={(e) => setFormData({ ...formData, dietType: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all"
+                                        >
+                                            {['Any', 'Vegetarian', 'Vegan', 'High Protein', 'Keto', 'Weight Loss'].map(d => (
+                                                <option key={d} value={d}>{d}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="lg:col-span-2 grid grid-cols-4 gap-2">
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-700 mb-2">Calories</label>
+                                            <input type="number" required value={formData.calories} onChange={(e) => setFormData({ ...formData, calories: e.target.value })} className="w-full px-2 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all text-sm" placeholder="kcal" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-700 mb-2">Protein (g)</label>
+                                            <input type="number" required value={formData.protein} onChange={(e) => setFormData({ ...formData, protein: e.target.value })} className="w-full px-2 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all text-sm" placeholder="g" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-700 mb-2">Carbs (g)</label>
+                                            <input type="number" required value={formData.carbs} onChange={(e) => setFormData({ ...formData, carbs: e.target.value })} className="w-full px-2 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all text-sm" placeholder="g" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-700 mb-2">Fat (g)</label>
+                                            <input type="number" required value={formData.fat} onChange={(e) => setFormData({ ...formData, fat: e.target.value })} className="w-full px-2 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:border-primary-500 focus:bg-white transition-all text-sm" placeholder="g" />
+                                        </div>
                                     </div>
                                 </div>
 
