@@ -213,13 +213,15 @@ const Admin = () => {
     };
 
     // Filter recipes or users based on search
+    const searchLower = searchTerm.trim().toLowerCase();
     const filteredRecipes = (activeTab === 'approved' ? recipes : pendingRecipes).filter(r =>
-        r.title.toLowerCase().includes(searchTerm.toLowerCase())
+        !searchLower || (r.title && r.title.toLowerCase().includes(searchLower))
     );
 
     const filteredUsers = usersList.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        !searchLower ||
+        (u.name && u.name.toLowerCase().includes(searchLower)) ||
+        (u.email && u.email.toLowerCase().includes(searchLower))
     );
 
     const handleVerifyUser = async (id) => {

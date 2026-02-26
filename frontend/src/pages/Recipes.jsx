@@ -46,8 +46,11 @@ const Recipes = () => {
     };
 
     const filteredRecipes = recipes.filter(recipe => {
-        const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            recipe.ingredients.some(i => i.toLowerCase().includes(searchTerm.toLowerCase()));
+        const searchLower = searchTerm.trim().toLowerCase();
+        const matchesSearch = !searchLower ||
+            (recipe.title && recipe.title.toLowerCase().includes(searchLower)) ||
+            (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.some(i => i.toLowerCase().includes(searchLower))) ||
+            (recipe.description && recipe.description.toLowerCase().includes(searchLower));
 
         // Match standard category, new region, or new diet type
         const matchesCategory = activeCategory === 'All' ||
