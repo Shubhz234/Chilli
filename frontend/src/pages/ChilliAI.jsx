@@ -285,7 +285,7 @@ const ChilliAI = () => {
                     </header>
 
                     {/* Chat Area */}
-                    <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar relative px-3 sm:px-6 lg:px-10 py-4 sm:py-6 pb-40 sm:pb-32">
+                    <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar relative px-3 sm:px-6 lg:px-10 py-4 sm:py-6">
                         {messages.length === 1 && activeChatId === null && (
                             <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in opacity-80 pt-10 pb-20">
                                 <div className="w-24 h-24 mb-6 rounded-3xl bg-gradient-to-br from-orange-100 to-red-50 flex items-center justify-center shadow-inner transform rotate-3">
@@ -351,7 +351,7 @@ const ChilliAI = () => {
                     </div>
 
                     {/* Input Area */}
-                    <div className="absolute bottom-0 left-0 w-full pt-6 pb-2 sm:pb-6 z-20 px-2 sm:px-6 lg:px-10 bg-gradient-to-t from-white/90 via-white/80 to-transparent backdrop-blur-[2px]">
+                    <div className="w-full shrink-0 pt-4 pb-4 sm:pb-6 z-20 px-2 sm:px-6 lg:px-10 sm:bg-gradient-to-t sm:from-white/90 sm:via-white/80 sm:to-transparent backdrop-blur-md sm:backdrop-blur-[2px] border-t border-white/40 sm:border-t-0">
                         <div className="max-w-4xl mx-auto w-full relative group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 rounded-[36px] blur opacity-25 group-focus-within:opacity-50 transition duration-500"></div>
                             <form
