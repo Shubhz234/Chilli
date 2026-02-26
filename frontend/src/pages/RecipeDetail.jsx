@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Clock, Flame, User, ArrowLeft, Heart, Share2, PlayCircle, Plus, Check, ChefHat, Star, MessageSquare, X, Printer, ShoppingCart, Activity, ChevronRight, ChevronLeft, MapPin, Bookmark, BadgeCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { recipes as initialRecipes } from '../data/mockRecipes';
 
 // Helper to convert standard YouTube links into embeddable iframe links
@@ -42,12 +43,12 @@ const RecipeDetail = () => {
 
     const submitReview = async () => {
         if (!user) {
-            alert("Please log in to leave a review.");
+            toast.error("Please log in to leave a review.");
             navigate('/login');
             return;
         }
         if (rating === 0) {
-            alert("Please select a star rating.");
+            toast.error("Please select a star rating.");
             return;
         }
 
@@ -68,12 +69,14 @@ const RecipeDetail = () => {
                 setRecipe({ ...data.recipe, id: data.recipe._id.toString() });
                 setRating(0);
                 setReviewComment('');
+                toast.success('Review submitted successfully!');
             } else {
                 const err = await res.json();
-                alert(err.message || 'Error submitting review');
+                toast.error(err.message || 'Error submitting review');
             }
         } catch (err) {
             console.error("Failed to submit review", err);
+            toast.error('Failed to submit review');
         }
     };
 

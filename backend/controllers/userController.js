@@ -1,6 +1,10 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { Resend } from 'resend';
+
+// Initialize Resend with the provided API Key. In production, this goes in the .env file.
+const resend = new Resend(process.env.RESEND_API_KEY || 're_HMs7FFNE_JCfzor1vupMmpf9eLwFkgLEL');
 
 // @desc    Register a new user
 // @route   POST /api/users/register
@@ -329,5 +333,108 @@ export const toggleBlockUser = async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Server error toggling block status', error: error.message });
+    }
+};
+
+// @desc    Send OTP to user email
+// @route   POST /api/users/login/otp/send
+// @access  Public
+export const sendLoginOTP = async (req, res) => {
+    try {
+        const email = req.body.email ? req.body.email.toLowerCase() : '';
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found. Please create an account.', code: 'USER_NOT_FOUND' });
+        }
+
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account has been blocked by the admin.' });
+        }
+
+        // Generate 6 digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const salt = await bcrypt.genSalt(10);
+        user.otp = await bcrypt.hash(otp, salt);
+        user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+
+        await user.save(); // CRITICAL: Save the generated OTP to the database
+
+        // Send Email via Resend
+        const { data, error } = await resend.emails.send({
+            from: 'Chilli <onboarding@resend.dev>', // Keep onboarding@resend.dev for the free tier testing
+            to: user.email,
+            subject: 'Chilli Login OTP Verification code',
+            html: `<h3>Your Chilli Recipe Login OTP</h3>
+                   <p>Use the following 6-digit code to securely log in to your account. This code is valid for 10 minutes.</p>
+                   <h1 style="font-size: 32px; letter-spacing: 4px; padding: 10px; background: #f4f4f5; display: inline-block; border-radius: 8px;">${otp}</h1>`
+        });
+
+        if (error) {
+            console.error('Resend Error:', error);
+            return res.status(500).json({ message: 'Failed to send OTP email', error });
+        }
+
+        res.json({ message: 'OTP sent to your email successfully.' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error sending OTP', error: error.message });
+    }
+};
+
+
+// @desc    Verify OTP & get token
+// @route   POST /api/users/login/otp/verify
+// @access  Public
+export const verifyLoginOTP = async (req, res) => {
+    try {
+        const { otp } = req.body;
+        const email = req.body.email ? req.body.email.toLowerCase() : '';
+
+        const user = await User.findOne({ email }).select('+otp');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account has been blocked by the admin.' });
+        }
+
+        if (!user.otp || !user.otpExpires || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: 'OTP is expired or invalid. Please request a new one.' });
+        }
+
+        const isMatch = await bcrypt.compare(otp.toString(), user.otp);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Incorrect OTP. Try again.' });
+        }
+
+        // Clear OTP
+        user.otp = undefined;
+        user.otpExpires = undefined;
+
+        // Capture Login Info
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown IP';
+        const device = req.headers['user-agent'] || 'Unknown Device';
+        user.loginHistory.push({ ip, device, time: new Date() });
+        if (user.loginHistory.length > 10) user.loginHistory.shift();
+        await user.save();
+
+        const token = jwt.sign({ id: user._id, isAdmin: user.isAdmin }, process.env.JWT_SECRET || 'chilli_secret_123', { expiresIn: '30d' });
+
+        res.json({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            isVerified: user.isVerified,
+            bio: user.bio,
+            profilePhoto: user.profilePhoto,
+            followers: user.followers,
+            following: user.following,
+            savedRecipes: user.savedRecipes,
+            token
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error verifying OTP', error: error.message });
     }
 };

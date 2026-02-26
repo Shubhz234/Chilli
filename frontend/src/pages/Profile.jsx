@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Calendar, Info, LogOut, Utensils, Heart, Edit2, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -67,13 +68,14 @@ const Profile = () => {
                 setUser(updatedUser);
                 setIsEditing(false);
                 window.dispatchEvent(new Event('authStatusChanged'));
+                toast.success('Profile updated successfully!');
             } else {
                 const errorData = await res.json();
-                alert(errorData.message || 'Failed to update profile');
+                toast.error(errorData.message || 'Failed to update profile');
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('An error occurred while saving.');
+            toast.error('An error occurred while saving.');
         }
     };
 

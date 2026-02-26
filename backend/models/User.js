@@ -33,7 +33,9 @@ const userSchema = new mongoose.Schema({
         ip: String,
         time: { type: Date, default: Date.now },
         device: String
-    }]
+    }],
+    otp: { type: String, select: false },
+    otpExpires: { type: Date }
 }, {
     timestamps: true
 });
