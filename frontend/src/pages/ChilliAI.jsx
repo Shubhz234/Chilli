@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChefHat, Send, Sparkles, User, Image as ImageIcon, Camera, Menu, Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { ChefHat, Send, Menu, Plus, MessageSquare, Trash2, Home, Utensils, Image as ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ChilliAI = () => {
+    const navigate = useNavigate();
     const initialMessage = {
         id: 1,
         type: 'ai',
@@ -12,7 +14,7 @@ const ChilliAI = () => {
     const [messages, setMessages] = useState([initialMessage]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [history, setHistory] = useState([]);
     const [activeChatId, setActiveChatId] = useState(null);
     const messagesEndRef = useRef(null);
@@ -62,7 +64,6 @@ const ChilliAI = () => {
                 timestamp: m.timestamp || new Date(chatItem.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             })));
         } else {
-            // Graceful fallback for older single-prompt chat records
             setMessages([
                 {
                     id: Date.now(),
@@ -115,7 +116,6 @@ const ChilliAI = () => {
         setInput('');
         setIsTyping(true);
 
-        // Grab logged-in user if available to link the chat history on backend
         const storedUser = localStorage.getItem('chilli_user');
         const userId = storedUser ? JSON.parse(storedUser).id : null;
 
@@ -138,17 +138,14 @@ const ChilliAI = () => {
 
                 if (data.chatId) {
                     setActiveChatId(data.chatId);
-                    // Update history locally instead of full refetch to remain fast
                     setHistory(prev => {
                         const existingChat = prev.find(c => c._id === data.chatId);
                         if (existingChat) {
-                            // Update existing Array
                             return prev.map(c => c._id === data.chatId ? {
                                 ...c,
                                 messages: [...(c.messages || []), { type: 'user', text: userMsg.text }, { type: 'ai', text: data.text }]
                             } : c);
                         } else {
-                            // New Chat
                             return [{
                                 _id: data.chatId,
                                 title: userMsg.text.substring(0, 30) + (userMsg.text.length > 30 ? '...' : ''),
@@ -163,7 +160,7 @@ const ChilliAI = () => {
                 setMessages(prev => [...prev, {
                     id: Date.now() + 1,
                     type: 'ai',
-                    text: `Oops! There was an issue: ${errData.message || 'Could not connect to AI.'}`,
+                    text: `Oops! My kitchen had a tiny fire: ${errData.message || 'Could not connect.'}`,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 }]);
             }
@@ -171,7 +168,7 @@ const ChilliAI = () => {
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 type: 'ai',
-                text: "I'm having trouble connecting to my kitchen server right now. Please try again later.",
+                text: "I'm having trouble connecting to my kitchen server right now. Let me grab my whisk and try later.",
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }]);
         } finally {
@@ -180,135 +177,197 @@ const ChilliAI = () => {
     };
 
     return (
-        <div className="bg-white flex pt-24 overflow-hidden" style={{ height: 'calc(100vh - 0px)' }}>
-            {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'} overflow-hidden transition-all duration-300 ease-in-out bg-[#f0f4f9] flex flex-col h-full flex-shrink-0 z-40 md:relative absolute shadow-2xl md:shadow-none`}>
-                <div className="p-4 w-64 flex flex-col h-full opacity-100">
-                    <button
-                        onClick={handleNewChat}
-                        className="flex items-center gap-3 px-4 py-3 bg-[#e9eef6] text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors mb-6 shadow-sm mx-1 cursor-pointer"
-                    >
-                        <Plus className="w-5 h-5 text-gray-500" />
-                        New Chat
-                    </button>
+        <div className="relative min-h-screen bg-transparent pt-20 pb-4 overflow-hidden flex flex-col font-sans">
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        <h3 className="text-[11px] font-bold text-gray-500 mb-3 px-3 uppercase tracking-wider">Recent</h3>
-                        {history.length === 0 ? (
-                            <p className="text-sm text-gray-400 px-3 font-medium">No previous chats.</p>
-                        ) : (
-                            <div className="space-y-1">
-                                {history.map((item) => (
-                                    <div
-                                        key={item._id}
-                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors text-left group cursor-pointer ${activeChatId === item._id ? 'bg-[#d3e3fd]' : 'hover:bg-[#e4e9f1]'}`}
-                                        onClick={() => loadChat(item)}
-                                    >
-                                        <div className="flex items-center gap-3 overflow-hidden flex-1">
-                                            <MessageSquare className={`w-4 h-4 flex-shrink-0 ${activeChatId === item._id ? 'text-primary-600' : 'text-gray-500'}`} />
-                                            <p className={`text-[13.5px] truncate font-medium ${activeChatId === item._id ? 'text-primary-800' : 'text-gray-700'}`}>
-                                                {item.title || item.userInput}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={(e) => deleteChat(e, item._id)}
-                                            className="ml-2 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-rose-100 text-rose-500 rounded-lg transition-all flex-shrink-0"
-                                            title="Delete Chat"
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-rose-400/20 rounded-full blur-3xl -z-10 animate-blob"></div>
+            <div className="absolute bottom-40 left-10 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl -z-10 animate-blob animation-delay-2000"></div>
+
+            <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 flex gap-4 xl:gap-6 relative h-[calc(100vh-100px)] z-10">
+
+                {/* Glass Sidebar */}
+                <div
+                    className={`absolute md:relative left-0 top-0 h-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] z-40 
+                        ${isSidebarOpen ? 'w-[280px] translate-x-0' : 'w-[280px] -translate-x-[110%] md:w-0 md:translate-x-0'} 
+                        md:${isSidebarOpen ? 'w-[280px] opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}
+                >
+                    <div className="glass-panel w-full h-full rounded-[30px] flex flex-col overflow-hidden shadow-xl border border-white/60">
+                        {/* Sidebar Header */}
+                        <div className="p-5 border-b border-gray-100/50 bg-white/40">
+                            <button
+                                onClick={handleNewChat}
+                                className="w-full liquid-button shadow-md flex items-center justify-center gap-2 py-3 rounded-2xl text-sm tracking-wide"
+                            >
+                                <Plus className="w-4 h-4" /> Start New Recipe
+                            </button>
+                        </div>
+
+                        {/* Sidebar History */}
+                        <div className="flex-1 overflow-y-auto px-3 py-4 custom-scrollbar">
+                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-2 mb-3">Kitchen History</h3>
+                            {history.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <Utensils className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-sm text-gray-400 font-medium">No previous cooks.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-1.5">
+                                    {history.map((item) => (
+                                        <div
+                                            key={item._id}
+                                            className={`group w-full flex items-center justify-between p-3 rounded-2xl transition-all cursor-pointer backdrop-blur-sm 
+                                                ${activeChatId === item._id
+                                                    ? 'bg-gradient-to-r from-orange-50 to-rose-50 border border-orange-200 shadow-sm'
+                                                    : 'hover:bg-white/60 border border-transparent'}`}
+                                            onClick={() => loadChat(item)}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex items-center gap-3 overflow-hidden">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors
+                                                    ${activeChatId === item._id ? 'bg-orange-100' : 'bg-gray-100 group-hover:bg-white'}`}>
+                                                    <MessageSquare className={`w-4 h-4 ${activeChatId === item._id ? 'text-orange-500' : 'text-gray-400'}`} />
+                                                </div>
+                                                <p className={`text-sm truncate font-medium ${activeChatId === item._id ? 'text-gray-900' : 'text-gray-600'}`}>
+                                                    {item.title || item.userInput}
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={(e) => deleteChat(e, item._id)}
+                                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-100 hover:text-rose-500 text-gray-400 rounded-xl transition-all"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Overlay for mobile sidebar */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-30 md:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
+
+                {/* Main Chat Container */}
+                <div className="flex-1 h-full flex flex-col glass-panel rounded-[30px] md:rounded-[40px] shadow-2xl border border-white/60 overflow-hidden relative backdrop-blur-3xl bg-white/50">
+
+                    {/* Header */}
+                    <header className="flex items-center justify-between p-4 sm:px-8 sm:py-5 bg-white/40 border-b border-gray-100/50 backdrop-blur-md z-20">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                className="p-2 sm:p-2.5 bg-white shadow-sm hover:shadow text-gray-600 hover:text-orange-500 rounded-full transition-all"
+                            >
+                                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl shadow-lg shadow-orange-500/30">
+                                    <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight leading-tight">Chilli AI</h1>
+                                    <p className="text-xs text-orange-500 font-medium tracking-wide uppercase">Your Kitchen Companion</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/')}
+                            className="p-2.5 sm:px-4 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors flex items-center gap-2 text-sm font-semibold"
+                        >
+                            <span className="hidden sm:block">Back Home</span>
+                            <Home className="w-5 h-5" />
+                        </button>
+                    </header>
+
+                    {/* Chat Area */}
+                    <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar relative px-3 sm:px-6 lg:px-10 py-6 pb-32">
+                        {messages.length === 1 && activeChatId === null && (
+                            <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in opacity-80 pt-10 pb-20">
+                                <div className="w-24 h-24 mb-6 rounded-3xl bg-gradient-to-br from-orange-100 to-red-50 flex items-center justify-center shadow-inner transform rotate-3">
+                                    <ChefHat className="w-12 h-12 text-orange-500 drop-shadow-sm" />
+                                </div>
+                                <h2 className="text-3xl font-extrabold text-gray-900 mb-3">Cook something incredible.</h2>
+                                <p className="text-lg text-gray-500 max-w-md mx-auto font-medium">
+                                    Tell Chilli what ingredients you have in your kitchen, and magic will happen.
+                                </p>
                             </div>
                         )}
-                    </div>
-                </div>
-            </div>
 
-            {/* Main Chat Column */}
-            <div className="flex-1 flex flex-col h-full relative min-w-0 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] md:shadow-none rounded-tl-2xl md:rounded-none z-10 w-full">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 z-10 sticky top-0 bg-white bg-opacity-95 backdrop-blur-md border-b border-gray-100 md:border-none">
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="p-2.5 hover:bg-[#f0f4f9] rounded-full transition-colors text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#e9eef6]"
-                        >
-                            <Menu className="w-6 h-6" />
-                        </button>
-                        <span className="text-xl font-medium text-gray-700 flex items-center gap-2 px-2">
-                            Chilli AI <Sparkles className="w-5 h-5 text-[#3b82f6]" />
-                        </span>
-                    </div>
+                        <div className="space-y-6 sm:space-y-8 max-w-4xl mx-auto">
+                            {messages.map((msg, idx) => {
+                                // Don't show the initial hidden greeting if we're generating custom views
+                                if (idx === 0 && activeChatId === null && messages.length === 1) return null;
 
-                    <button
-                        onClick={handleNewChat}
-                        className="p-2.5 hover:bg-[#f0f4f9] rounded-full transition-colors text-gray-600 md:hidden flex items-center justify-center"
-                        title="New Chat"
-                    >
-                        <Plus className="w-6 h-6" />
-                    </button>
-                </div>
-
-                <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col h-full relative">
-                    {/* Chat Area */}
-                    <div className="flex-1 p-4 sm:p-6 overflow-y-auto scroll-smooth custom-scrollbar mb-24">
-                        <div className="space-y-8 pb-10">
-                            {messages.map((msg) => (
-                                <div
-                                    key={msg.id}
-                                    className={`flex gap-4 ${msg.type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
-                                >
-                                    {msg.type === 'ai' && (
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-transparent mt-1">
-                                            <Sparkles className="w-5 h-5 text-[#3b82f6]" />
-                                        </div>
-                                    )}
-
-                                    <div className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
-                                        {msg.type === 'user' ? (
-                                            <div className="px-5 py-3 rounded-[24px] bg-[#f0f4f9] text-gray-800">
-                                                <p className="leading-relaxed text-[15px]">{msg.text}</p>
-                                            </div>
-                                        ) : (
-                                            <div className="py-1 text-gray-800">
-                                                <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} className="leading-relaxed text-[16px]" style={{ whiteSpace: 'pre-wrap' }} />
+                                return (
+                                    <div
+                                        key={msg.id}
+                                        className={`flex gap-3 sm:gap-5 ${msg.type === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
+                                    >
+                                        {msg.type === 'ai' && (
+                                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20 z-10">
+                                                <ChefHat className="w-6 h-6 text-white" />
                                             </div>
                                         )}
+
+                                        <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
+                                            {msg.type === 'user' ? (
+                                                <div className="px-5 sm:px-6 py-3.5 sm:py-4 rounded-[28px] rounded-tr-[8px] bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-xl shadow-gray-900/10">
+                                                    <p className="leading-relaxed text-[15px] sm:text-[16px] font-medium">{msg.text}</p>
+                                                </div>
+                                            ) : (
+                                                <div className="px-5 sm:px-7 py-4 sm:py-6 rounded-[32px] rounded-tl-[10px] glass-panel bg-white/80 text-gray-800 shadow-xl border border-white/80">
+                                                    <div className="prose prose-orange max-w-none text-[15px] sm:text-[16px] leading-relaxed font-medium">
+                                                        <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-bold">$1</strong>').replace(/\n/g, '<br />') }} />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <span className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mt-2 px-2">
+                                                {msg.timestamp}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                             {isTyping && (
-                                <div className="flex gap-4 animate-fade-in">
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-transparent mt-1">
-                                        <Sparkles className="w-5 h-5 text-[#3b82f6] animate-pulse" />
+                                <div className="flex gap-4 sm:gap-5 items-end animate-fade-in pl-2">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-orange-500/20">
+                                        <ChefHat className="w-6 h-6 text-white animate-pulse" />
                                     </div>
-                                    <div className="py-2 flex gap-1.5 items-center">
-                                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
-                                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                                    <div className="px-6 py-5 rounded-[32px] rounded-tl-[10px] glass-panel bg-white/80 flex items-center gap-2 shadow-xl border border-white/80">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-bounce"></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-red-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                                     </div>
                                 </div>
                             )}
-                            <div ref={messagesEndRef} />
+                            <div ref={messagesEndRef} className="h-4" />
                         </div>
                     </div>
 
                     {/* Input Area */}
-                    <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white to-transparent pt-10 pb-4 sm:pb-8 z-20 px-4 sm:px-8">
-                        <div className="max-w-3xl mx-auto">
-                            <form onSubmit={handleSend} className="relative flex items-end bg-[#f0f4f9] rounded-[24px] px-2 py-2 shadow-sm focus-within:bg-[#e9eef6] transition-colors">
-                                <button type="button" className="p-3 text-gray-500 hover:text-gray-800 transition-colors rounded-full hover:bg-gray-200/50 mb-0.5">
-                                    <ImageIcon className="w-5 h-5" />
+                    <div className="absolute bottom-0 left-0 w-full pt-10 pb-4 sm:pb-6 z-20 px-3 sm:px-6 lg:px-10 bg-gradient-to-t from-white/90 via-white/80 to-transparent backdrop-blur-[2px]">
+                        <div className="max-w-4xl mx-auto w-full relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 rounded-[36px] blur opacity-25 group-focus-within:opacity-50 transition duration-500"></div>
+                            <form
+                                onSubmit={handleSend}
+                                className="relative flex items-end bg-white/90 backdrop-blur-xl rounded-[32px] p-2 shadow-2xl border border-white focus-within:bg-white transition-all duration-300"
+                            >
+                                <button type="button" className="p-3.5 sm:p-4 text-gray-400 hover:text-orange-500 transition-colors rounded-full hover:bg-orange-50 mb-0.5" title="Upload an Image">
+                                    <ImageIcon className="w-6 h-6" />
                                 </button>
 
                                 <textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask Chilli about recipes or ingredients"
+                                    placeholder="I have chicken, garlic, and rice. What can I make? 🌶️"
                                     rows={1}
-                                    className="flex-1 bg-transparent border-none py-3 px-2 focus:outline-none focus:ring-0 text-gray-800 text-[16px] placeholder-gray-500 resize-none min-h-[44px] max-h-[150px] overflow-y-auto"
+                                    className="flex-1 bg-transparent border-none py-4 px-2 focus:outline-none focus:ring-0 text-gray-900 text-[16px] sm:text-[17px] font-medium placeholder-gray-400 resize-none min-h-[56px] max-h-[160px] overflow-y-auto custom-scrollbar leading-relaxed"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
@@ -317,28 +376,29 @@ const ChilliAI = () => {
                                     }}
                                 />
 
-                                {input.trim() ? (
+                                <div className="mb-0.5 mr-1">
                                     <button
                                         type="submit"
-                                        className="p-2 bg-gray-900 text-white hover:bg-black transition-colors rounded-full mx-2 mb-1 shadow-md"
+                                        disabled={!input.trim() || isTyping}
+                                        className={`p-3.5 sm:p-4 rounded-full transition-all duration-300 transform shadow-md
+                                            ${!input.trim() || isTyping
+                                                ? 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
+                                                : 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'}`}
                                     >
-                                        <Send className="w-5 h-5 ml-0.5" />
+                                        <Send className={`w-5 h-5 sm:w-6 sm:h-6 ${input.trim() ? 'ml-0.5' : ''}`} />
                                     </button>
-                                ) : (
-                                    <button type="button" className="p-3 text-gray-500 hover:text-gray-800 transition-colors rounded-full mx-1 mb-0.5">
-                                        <Camera className="w-5 h-5" />
-                                    </button>
-                                )}
+                                </div>
                             </form>
-                            <div className="text-center mt-3">
-                                <p className="text-[12px] text-gray-500 tracking-wide font-medium">Chilli can make mistakes, so double-check it.</p>
+                            <div className="text-center mt-3 hidden sm:block">
+                                <p className="text-[12px] text-gray-500 font-semibold tracking-wide drop-shadow-sm">Chilli loves to experiment, but please verify recipes.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };
 
 export default ChilliAI;
+

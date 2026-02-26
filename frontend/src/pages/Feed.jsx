@@ -76,13 +76,13 @@ const Feed = () => {
         <div className="min-h-screen bg-gray-50 pt-24 pb-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 mt-8 animate-slide-up">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-10 mt-6 sm:mt-8 animate-slide-up">
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Your Feed</h1>
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight mb-2">Your Feed</h1>
                         <p className="text-gray-600">Discover fresh content tailored for you.</p>
                     </div>
 
-                    <div className="bg-white p-1 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-1 overflow-x-auto">
+                    <div className="bg-white/60 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-white flex items-center gap-1 overflow-x-auto custom-scrollbar">
                         <button
                             onClick={() => setFeedType('following')}
                             className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${feedType === 'following'
@@ -157,8 +157,8 @@ const Feed = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {recipes.map((recipe, index) => (
                             <Link to={`/recipe/${recipe._id || recipe.id}`} key={recipe._id || recipe.id} className="block group animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                                <div className="liquid-card h-full flex flex-col border border-gray-100 hover:border-primary-100 transition-colors">
-                                    <div className="relative h-56 overflow-hidden rounded-t-3xl">
+                                <div className="liquid-card h-full flex flex-col border border-white/50 hover:border-primary-200 transition-colors">
+                                    <div className="relative h-48 sm:h-56 overflow-hidden rounded-t-[22px]">
                                         <img
                                             src={recipe.image}
                                             alt={recipe.title}
@@ -171,7 +171,7 @@ const Feed = () => {
                                         </div>
                                     </div>
 
-                                    <div className="p-6 flex-1 flex flex-col">
+                                    <div className="p-5 sm:p-6 flex-1 flex flex-col bg-white/40 backdrop-blur-sm">
                                         <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors line-clamp-2">
                                             {recipe.title}
                                         </h3>
@@ -221,11 +221,11 @@ const Feed = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="bg-white rounded-3xl p-12 text-center shadow-sm border border-gray-100 flex flex-col items-center">
-                        <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                            <Users className="w-10 h-10 text-gray-300" />
+                    <div className="glass-panel bg-white/60 rounded-[32px] p-8 sm:p-12 text-center shadow-lg border border-white/80 flex flex-col items-center mx-4 sm:mx-0">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50/80 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                            <Users className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                             {feedType === 'following' ? "You aren't following anyone yet." : "No recipes found here."}
                         </h3>
                         <p className="text-gray-500 max-w-sm mx-auto mb-6">

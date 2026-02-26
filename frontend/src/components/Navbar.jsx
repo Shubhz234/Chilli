@@ -231,10 +231,10 @@ const Navbar = () => {
 
             {/* Mobile Menu Content */}
             <div
-                className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-3xl shadow-xl border-t border-gray-100 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-screen opacity-100 py-4' : 'max-h-0 opacity-0'
+                className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-3xl border-t border-white/60 transition-all duration-300 overflow-hidden shadow-2xl rounded-b-[32px] ${isMobileMenuOpen ? 'max-h-[calc(100svh-5rem)] opacity-100' : 'max-h-0 opacity-0'
                     }`}
             >
-                <div className="px-4 py-4 space-y-3">
+                <div className="px-4 py-4 space-y-3 max-h-[calc(100svh-5rem)] overflow-y-auto custom-scrollbar">
                     {navLinks.map((link) => (
                         <Link
                             key={link.name}

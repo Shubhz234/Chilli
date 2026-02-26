@@ -17,11 +17,13 @@ const Home = () => {
 
     return (
         <div className="min-h-screen flex flex-col relative z-0">
-            {/* Darker floating liquid blobs */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-rose-400/20 rounded-full blur-3xl -z-10 animate-blob"></div>
-            <div className="absolute bottom-40 left-10 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl -z-10 animate-blob animation-delay-2000"></div>
+            {/* Darker floating liquid blobs perfectly constrained to avoid overflow */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+                <div className="absolute top-0 right-0 w-72 h-72 sm:w-96 sm:h-96 bg-rose-400/20 rounded-full blur-3xl animate-blob"></div>
+                <div className="absolute bottom-40 left-10 w-64 h-64 sm:w-80 sm:h-80 bg-orange-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+            </div>
             {/* Hero Section */}
-            <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
+            <section className="relative pt-24 sm:pt-32 pb-16 lg:pt-40 lg:pb-28 overflow-hidden">
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <div className="text-center max-w-4xl mx-auto">
@@ -30,12 +32,12 @@ const Home = () => {
                             <span className="text-sm font-medium text-gray-600">Powered by advanced AI matching</span>
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight mb-6 sm:mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
                             Your Intelligent <br className="hidden md:block" />
                             <span className="text-gradient">Culinary Companion</span>
                         </h1>
 
-                        <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed animate-slide-up" style={{ animationDelay: '0.2s' }}>
+                        <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed animate-slide-up px-2" style={{ animationDelay: '0.2s' }}>
                             Discover, learn, and cook with Chilli. From smart ingredient-based searches to AI-guided step-by-step videos, master your kitchen today.
                         </p>
 
@@ -65,9 +67,9 @@ const Home = () => {
             <section className="py-20 bg-transparent">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-2 gap-16 items-center">
-                        <div className="order-2 md:order-1 relative">
+                        <div className="order-2 md:order-1 relative mt-8 md:mt-0">
                             <div className="absolute inset-0 bg-gradient-to-tr from-primary-200 to-orange-200 rounded-3xl transform -rotate-3 scale-105 blur-lg -z-10 opacity-60"></div>
-                            <div className="liquid-card p-5 sm:p-8 relative">
+                            <div className="liquid-card p-4 sm:p-6 lg:p-8 relative">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-orange-400"></div>
                                 <div className="flex items-start gap-4 mb-6">
                                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">

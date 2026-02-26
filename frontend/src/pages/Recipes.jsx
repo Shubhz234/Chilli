@@ -63,8 +63,8 @@ const Recipes = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header & Search */}
-                <div className="mb-12 animate-slide-up">
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-6">
+                <div className="mb-8 sm:mb-12 animate-slide-up">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-6">
                         Explore <span className="text-gradient">Recipes</span>
                     </h1>
 
@@ -96,12 +96,12 @@ const Recipes = () => {
                 </div>
 
                 {/* Categories */}
-                <div className="flex overflow-x-auto pb-4 mb-8 gap-3 no-scrollbar animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                <div className="flex overflow-x-auto pb-4 mb-8 gap-2 sm:gap-3 custom-scrollbar animate-slide-up" style={{ animationDelay: '0.1s' }}>
                     {categories.map((cat) => (
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className={`px-6 py-2.5 rounded-full font-medium whitespace-nowrap transition-all ${activeCategory === cat
+                            className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeCategory === cat
                                 ? 'liquid-button'
                                 : 'glass-panel text-gray-800 hover:text-primary-600 font-semibold'
                                 }`}

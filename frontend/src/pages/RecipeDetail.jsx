@@ -254,10 +254,10 @@ const RecipeDetail = () => {
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-auto">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="max-w-3xl animate-slide-up">
-                            <span className="inline-block px-3 py-1 bg-primary-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg mb-4">
+                            <span className="inline-block px-3 py-1 bg-primary-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg mb-3 sm:mb-4">
                                 {recipe.category}
                             </span>
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-2">
+                            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-4 line-clamp-3 md:line-clamp-2">
                                 {recipe.title}
                             </h1>
                             {recipe.author ? (
@@ -293,11 +293,11 @@ const RecipeDetail = () => {
                             </p>
                         </div>
 
-                        <div className="flex items-center gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full pr-1">
+                        <div className="flex items-center gap-3 sm:gap-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full pr-1 shadow-sm border border-white/20">
                                 <button
                                     onClick={handleLikeToggle}
-                                    className={`p-3 rounded-full transition-all hover:scale-110 flex items-center gap-2 ${isLiked ? 'text-rose-500' : 'text-white'}`}
+                                    className={`p-2.5 sm:p-3 rounded-full transition-all hover:scale-110 flex items-center gap-2 ${isLiked ? 'text-rose-500' : 'text-white'}`}
                                 >
                                     <Heart className={`w-6 h-6 ${isLiked ? 'fill-rose-500' : ''}`} />
                                 </button>
@@ -315,7 +315,7 @@ const RecipeDetail = () => {
                             </div>
                             <button
                                 onClick={toggleFavourite}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold shadow-xl transition-all hover:-translate-y-1 ${isFavourite
+                                className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-bold shadow-xl transition-all hover:-translate-y-1 ${isFavourite
                                     ? 'bg-rose-50 text-rose-600 border border-rose-200'
                                     : 'bg-white text-gray-900 hover:bg-primary-50 hover:text-primary-600'
                                     }`}
@@ -328,10 +328,24 @@ const RecipeDetail = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
                 {/* Key Stats Bar */}
-                <div className="glass-panel-dark text-white rounded-3xl p-6 sm:px-12 mb-12 flex flex-wrap gap-8 sm:justify-between items-center animate-slide-up shadow-2xl relative -mt-20 z-20">
-                    <div className="flex items-center gap-3">
+                <div className="glass-panel-dark text-white rounded-3xl p-5 sm:p-6 lg:px-12 mb-8 sm:mb-12 grid grid-cols-3 gap-4 sm:flex sm:flex-wrap sm:gap-8 sm:justify-between items-center animate-slide-up shadow-2xl relative -mt-16 sm:-mt-20 z-20">
+                    <div className="flex flex-col items-center sm:hidden text-center col-span-1">
+                        <Clock className="w-5 h-5 text-primary-400 mb-1" />
+                        <p className="font-bold text-sm sm:text-lg">{recipe.time}</p>
+                    </div>
+                    <div className="flex flex-col items-center sm:hidden text-center col-span-1 border-x border-gray-700">
+                        <Flame className="w-5 h-5 text-orange-400 mb-1" />
+                        <p className="font-bold text-sm sm:text-lg">{recipe.difficulty}</p>
+                    </div>
+                    <div className="flex flex-col items-center sm:hidden text-center col-span-1">
+                        <User className="w-5 h-5 text-purple-400 mb-1" />
+                        <p className="font-bold text-sm sm:text-lg">{recipe.servings || 4}</p>
+                    </div>
+
+                    {/* Desktop Stats (Hidden on Small Mobile) */}
+                    <div className="hidden sm:flex items-center gap-3">
                         <Clock className="w-6 h-6 text-primary-400" />
                         <div>
                             <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Prep time</p>
@@ -339,7 +353,7 @@ const RecipeDetail = () => {
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-700"></div>
-                    <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-3">
                         <Flame className="w-6 h-6 text-orange-400" />
                         <div>
                             <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Difficulty</p>
@@ -347,7 +361,7 @@ const RecipeDetail = () => {
                         </div>
                     </div>
                     <div className="hidden sm:block w-px h-10 bg-gray-700"></div>
-                    <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-3">
                         <User className="w-6 h-6 text-purple-400" />
                         <div>
                             <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Servings</p>
