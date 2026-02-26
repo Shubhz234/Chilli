@@ -122,7 +122,10 @@ export const followUser = async (req, res) => {
         const currentUser = await User.findById(currentUserId);
 
         if (userToFollow && currentUser) {
-            if (!userToFollow.followers.includes(currentUserId)) {
+            // Use string comparison for ObjectIds to accurately determine if already following
+            const isAlreadyFollower = userToFollow.followers.some(id => id.toString() === currentUserId.toString());
+
+            if (!isAlreadyFollower) {
                 userToFollow.followers.push(currentUserId);
 
                 // Add notification
@@ -134,7 +137,9 @@ export const followUser = async (req, res) => {
 
                 await userToFollow.save();
             }
-            if (!currentUser.following.includes(req.params.id)) {
+
+            const isAlreadyFollowing = currentUser.following.some(id => id.toString() === req.params.id.toString());
+            if (!isAlreadyFollowing) {
                 currentUser.following.push(req.params.id);
                 await currentUser.save();
             }

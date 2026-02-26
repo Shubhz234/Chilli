@@ -8,6 +8,8 @@ const CookProfile = () => {
     const [profileUser, setProfileUser] = useState(null);
     const [recipes, setRecipes] = useState([]);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [followModal, setFollowModal] = useState(null); // 'followers' | 'following' | null
+    const [allUsers, setAllUsers] = useState([]);
 
     const loggedInUserStr = localStorage.getItem('chilli_user');
     const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
@@ -82,7 +84,19 @@ const CookProfile = () => {
         }
     };
 
-    if (!profileUser) return <div className="min-h-screen pt-32 pb-20 text-center">Loading...</div>;
+    const handleOpenFollowModal = async (type) => {
+        setFollowModal(type);
+        try {
+            const res = await fetch('/api/users');
+            if (res.ok) {
+                setAllUsers(await res.json());
+            }
+        } catch (err) {
+            console.error('Failed to load users for modal');
+        }
+    };
+
+    if (!profileUser) return <div className="min-h-screen pt-32 pb-20 text-center flex items-center justify-center font-bold text-gray-400">Loading...</div>;
 
     return (
         <div className="min-h-screen bg-gray-50 pt-32 pb-20">
@@ -109,12 +123,12 @@ const CookProfile = () => {
                             <p className="text-gray-600 mt-2 italic">"{profileUser.bio || 'Home cook'}"</p>
 
                             <div className="flex items-center justify-center sm:justify-start gap-6 mt-4">
-                                <div className="text-center">
-                                    <span className="block font-bold text-gray-900 text-xl">{profileUser.followers?.length || 0}</span>
+                                <div onClick={() => handleOpenFollowModal('followers')} className="text-center cursor-pointer hover:opacity-70 transition-opacity group">
+                                    <span className="block font-bold text-gray-900 text-xl group-hover:text-primary-600 transition-colors">{profileUser.followers?.length || 0}</span>
                                     <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Followers</span>
                                 </div>
-                                <div className="text-center">
-                                    <span className="block font-bold text-gray-900 text-xl">{profileUser.following?.length || 0}</span>
+                                <div onClick={() => handleOpenFollowModal('following')} className="text-center cursor-pointer hover:opacity-70 transition-opacity group">
+                                    <span className="block font-bold text-gray-900 text-xl group-hover:text-primary-600 transition-colors">{profileUser.following?.length || 0}</span>
                                     <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Following</span>
                                 </div>
                                 <div className="text-center">
@@ -174,6 +188,38 @@ const CookProfile = () => {
                     )}
                 </div>
             </div>
+
+            {/* Followers / Following Modal */}
+            {followModal && (
+                <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setFollowModal(null)}>
+                    <div className="bg-white rounded-[32px] w-full max-w-sm overflow-hidden shadow-2xl transform scale-100 animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white relative">
+                            <h3 className="font-extrabold text-lg text-gray-900 capitalize mx-auto">{followModal}</h3>
+                            <button onClick={() => setFollowModal(null)} className="absolute right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors font-bold text-[10px] uppercase tracking-wider">Close</button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar bg-gray-50/30">
+                            {(() => {
+                                const listIds = followModal === 'followers' ? profileUser.followers : profileUser.following;
+                                if (!listIds || listIds.length === 0) return <div className="p-10 text-center text-gray-500 text-sm font-medium">No {followModal} found.</div>;
+
+                                const listUsers = allUsers.filter(u => listIds.some(id => (id._id || id) === u._id));
+
+                                if (listUsers.length === 0) return <div className="p-10 flex justify-center"><div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>;
+
+                                return listUsers.map(u => (
+                                    <div key={u._id} onClick={() => { setFollowModal(null); navigate(`/user/${u._id}`); }} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-colors group cursor-pointer">
+                                        <img src={u.profilePhoto || "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix"} className="w-12 h-12 rounded-full object-cover border border-gray-200 group-hover:scale-105 transition-transform" alt={u.name} />
+                                        <div className="flex-1 overflow-hidden">
+                                            <h4 className="font-bold text-gray-900 text-sm truncate flex items-center gap-1">{u.name}{(u.isVerified || u.isAdmin) && <BadgeCheck className="w-3.5 h-3.5 text-primary-500 shrink-0" />}</h4>
+                                            <p className="text-xs text-gray-500 truncate font-medium">{u.followers?.length || 0} followers</p>
+                                        </div>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -12,6 +12,8 @@ const Profile = () => {
 
     // Full Screen Modal States
     const [viewMode, setViewMode] = useState(null); // 'uploaded' | 'saved' | null
+    const [followModal, setFollowModal] = useState(null); // 'followers' | 'following' | null
+    const [allUsers, setAllUsers] = useState([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -79,6 +81,18 @@ const Profile = () => {
         setEditData({ ...editData, [name]: value });
     };
 
+    const handleOpenFollowModal = async (type) => {
+        setFollowModal(type);
+        try {
+            const res = await fetch('/api/users');
+            if (res.ok) {
+                setAllUsers(await res.json());
+            }
+        } catch (err) {
+            console.error('Failed to load users for modal');
+        }
+    };
+
     if (!user) return null;
 
     return (
@@ -122,9 +136,15 @@ const Profile = () => {
                                 <p className="text-gray-600 italic mb-2">"{user.bio || 'Home cook'}"</p>
                             )}
 
-                            <div className="flex items-center justify-center sm:justify-start gap-4 text-sm font-semibold text-gray-600 mb-2">
-                                <div><span className="text-gray-900 font-bold">{user.followers?.length || 0}</span> Followers</div>
-                                <div><span className="text-gray-900 font-bold">{user.following?.length || 0}</span> Following</div>
+                            <div className="flex items-center justify-center sm:justify-start gap-5 mt-3 mb-2">
+                                <div onClick={() => handleOpenFollowModal('followers')} className="cursor-pointer hover:opacity-70 transition-opacity text-center sm:text-left group">
+                                    <span className="text-gray-900 font-extrabold text-lg mr-1 group-hover:text-primary-600 transition-colors">{user.followers?.length || 0}</span>
+                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Followers</span>
+                                </div>
+                                <div onClick={() => handleOpenFollowModal('following')} className="cursor-pointer hover:opacity-70 transition-opacity text-center sm:text-left group">
+                                    <span className="text-gray-900 font-extrabold text-lg mr-1 group-hover:text-primary-600 transition-colors">{user.following?.length || 0}</span>
+                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Following</span>
+                                </div>
                             </div>
 
                             <p className="text-primary-600 font-medium mt-1 flex items-center justify-center sm:justify-start gap-2">
@@ -436,6 +456,37 @@ const Profile = () => {
                                     <p className="text-xs text-gray-500 mt-2 font-medium bg-gray-50 px-3 py-1 rounded-lg w-full truncate">{recipe.difficulty} • {recipe.time}</p>
                                 </Link>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Followers / Following Modal */}
+            {followModal && (
+                <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setFollowModal(null)}>
+                    <div className="bg-white rounded-[32px] w-full max-w-sm overflow-hidden shadow-2xl transform scale-100 animate-slide-up" onClick={e => e.stopPropagation()}>
+                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white relative">
+                            <h3 className="font-extrabold text-lg text-gray-900 capitalize mx-auto">{followModal}</h3>
+                            <button onClick={() => setFollowModal(null)} className="absolute right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors font-bold text-[10px] uppercase tracking-wider">Close</button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar bg-gray-50/30">
+                            {(() => {
+                                const listIds = followModal === 'followers' ? user.followers : user.following;
+                                if (!listIds || listIds.length === 0) return <div className="p-10 text-center text-gray-500 text-sm font-medium">No {followModal} found.</div>;
+
+                                const listUsers = allUsers.filter(u => listIds.some(id => (id._id || id) === u._id));
+
+                                if (listUsers.length === 0) return <div className="p-10 flex justify-center"><div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>;
+
+                                return listUsers.map(u => (
+                                    <Link key={u._id} to={`/user/${u._id}`} onClick={() => setFollowModal(null)} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-colors group">
+                                        <img src={u.profilePhoto || "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix"} className="w-12 h-12 rounded-full object-cover border border-gray-200 group-hover:scale-105 transition-transform" alt={u.name} />
+                                        <div className="flex-1 overflow-hidden">
+                                            <h4 className="font-bold text-gray-900 text-sm truncate">{u.name}</h4>
+                                            <p className="text-xs text-gray-500 truncate font-medium">{u.followers?.length || 0} followers</p>
+                                        </div>
+                                    </Link>
+                                ));
+                            })()}
                         </div>
                     </div>
                 </div>
