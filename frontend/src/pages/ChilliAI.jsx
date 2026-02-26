@@ -183,7 +183,7 @@ const ChilliAI = () => {
             <div className="absolute top-0 right-0 w-96 h-96 bg-rose-400/20 rounded-full blur-3xl -z-10 animate-blob"></div>
             <div className="absolute bottom-40 left-10 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl -z-10 animate-blob animation-delay-2000"></div>
 
-            <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 flex gap-4 xl:gap-6 relative h-[calc(100vh-100px)] z-10">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 flex gap-4 xl:gap-6 relative h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] z-10">
 
                 {/* Glass Sidebar */}
                 <div
@@ -253,7 +253,7 @@ const ChilliAI = () => {
                 )}
 
                 {/* Main Chat Container */}
-                <div className="flex-1 h-full flex flex-col glass-panel rounded-[30px] md:rounded-[40px] shadow-2xl border border-white/60 overflow-hidden relative backdrop-blur-3xl bg-white/50">
+                <div className="flex-1 h-full flex flex-col glass-panel rounded-none sm:rounded-[30px] md:rounded-[40px] shadow-2xl border-x-0 border-b-0 sm:border border-white/60 overflow-hidden relative backdrop-blur-3xl bg-white/50">
 
                     {/* Header */}
                     <header className="flex items-center justify-between p-4 sm:px-8 sm:py-5 bg-white/40 border-b border-gray-100/50 backdrop-blur-md z-20">
@@ -285,7 +285,7 @@ const ChilliAI = () => {
                     </header>
 
                     {/* Chat Area */}
-                    <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar relative px-3 sm:px-6 lg:px-10 py-6 pb-32">
+                    <div className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar relative px-3 sm:px-6 lg:px-10 py-4 sm:py-6 pb-40 sm:pb-32">
                         {messages.length === 1 && activeChatId === null && (
                             <div className="h-full flex flex-col items-center justify-center text-center animate-fade-in opacity-80 pt-10 pb-20">
                                 <div className="w-24 h-24 mb-6 rounded-3xl bg-gradient-to-br from-orange-100 to-red-50 flex items-center justify-center shadow-inner transform rotate-3">
@@ -316,11 +316,11 @@ const ChilliAI = () => {
 
                                         <div className={`flex flex-col max-w-[85%] sm:max-w-[70%] ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
                                             {msg.type === 'user' ? (
-                                                <div className="px-5 sm:px-6 py-3.5 sm:py-4 rounded-[28px] rounded-tr-[8px] bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-xl shadow-gray-900/10">
-                                                    <p className="leading-relaxed text-[15px] sm:text-[16px] font-medium">{msg.text}</p>
+                                                <div className="px-4 sm:px-6 py-3 sm:py-4 rounded-[24px] rounded-tr-[8px] bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-xl shadow-gray-900/10">
+                                                    <p className="leading-relaxed text-[15px] sm:text-[16px] font-medium break-words">{msg.text}</p>
                                                 </div>
                                             ) : (
-                                                <div className="px-5 sm:px-7 py-4 sm:py-6 rounded-[32px] rounded-tl-[10px] glass-panel bg-white/80 text-gray-800 shadow-xl border border-white/80">
+                                                <div className="px-4 sm:px-7 py-3 sm:py-6 rounded-[28px] rounded-tl-[10px] glass-panel bg-white/80 text-gray-800 shadow-xl border border-white/80 w-full">
                                                     <div className="prose prose-orange max-w-none text-[15px] sm:text-[16px] leading-relaxed font-medium">
                                                         <div dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-bold">$1</strong>').replace(/\n/g, '<br />') }} />
                                                     </div>
@@ -351,7 +351,7 @@ const ChilliAI = () => {
                     </div>
 
                     {/* Input Area */}
-                    <div className="absolute bottom-0 left-0 w-full pt-10 pb-4 sm:pb-6 z-20 px-3 sm:px-6 lg:px-10 bg-gradient-to-t from-white/90 via-white/80 to-transparent backdrop-blur-[2px]">
+                    <div className="absolute bottom-0 left-0 w-full pt-6 pb-2 sm:pb-6 z-20 px-2 sm:px-6 lg:px-10 bg-gradient-to-t from-white/90 via-white/80 to-transparent backdrop-blur-[2px]">
                         <div className="max-w-4xl mx-auto w-full relative group">
                             <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 via-red-500 to-orange-400 rounded-[36px] blur opacity-25 group-focus-within:opacity-50 transition duration-500"></div>
                             <form
@@ -365,9 +365,9 @@ const ChilliAI = () => {
                                 <textarea
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
-                                    placeholder="I have chicken, garlic, and rice. What can I make? 🌶️"
+                                    placeholder="Type your ingredients or ask for a recipe..."
                                     rows={1}
-                                    className="flex-1 bg-transparent border-none py-4 px-2 focus:outline-none focus:ring-0 text-gray-900 text-[16px] sm:text-[17px] font-medium placeholder-gray-400 resize-none min-h-[56px] max-h-[160px] overflow-y-auto custom-scrollbar leading-relaxed"
+                                    className="flex-1 bg-transparent border-none py-3 sm:py-4 px-2 focus:outline-none focus:ring-0 text-gray-900 text-[15px] sm:text-[17px] font-medium placeholder-gray-400 resize-none min-h-[48px] sm:min-h-[56px] max-h-[120px] sm:max-h-[160px] overflow-y-auto custom-scrollbar leading-relaxed"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
