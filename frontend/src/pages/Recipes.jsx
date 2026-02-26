@@ -46,11 +46,27 @@ const Recipes = () => {
     };
 
     const filteredRecipes = recipes.filter(recipe => {
-        const searchLower = searchTerm.trim().toLowerCase();
-        const matchesSearch = !searchLower ||
-            (recipe.title && recipe.title.toLowerCase().includes(searchLower)) ||
-            (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.some(i => i.toLowerCase().includes(searchLower))) ||
-            (recipe.description && recipe.description.toLowerCase().includes(searchLower));
+        const searchRaw = searchTerm.trim();
+        const searchLower = searchRaw.toLowerCase();
+
+        let matchesSearch = true;
+
+        if (searchRaw) {
+            // Escape regex chars to prevent crashes, then build a word-boundary regex for strict matching
+            const escapedSearch = searchRaw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const searchRegex = new RegExp(`\\b${escapedSearch}\\b`, 'i');
+
+            matchesSearch = (recipe.title && searchRegex.test(recipe.title)) ||
+                (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.some(i => searchRegex.test(i))) ||
+                (recipe.description && searchRegex.test(recipe.description));
+
+            // Fallback for languages/terms that don't play well with boundary chars, do a strict full includes if regex fails over tiny words
+            if (!matchesSearch && searchRaw.length > 2) {
+                matchesSearch = (recipe.title && recipe.title.toLowerCase().includes(searchLower)) ||
+                    (recipe.ingredients && Array.isArray(recipe.ingredients) && recipe.ingredients.some(i => i.toLowerCase().includes(searchLower))) ||
+                    (recipe.description && recipe.description.toLowerCase().includes(searchLower));
+            }
+        }
 
         // Match standard category, new region, or new diet type
         const matchesCategory = activeCategory === 'All' ||
