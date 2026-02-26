@@ -12,7 +12,7 @@ const CookProfile = () => {
     const [allUsers, setAllUsers] = useState([]);
 
     const loggedInUserStr = localStorage.getItem('chilli_user');
-    const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
+    const loggedInUser = React.useMemo(() => loggedInUserStr ? JSON.parse(loggedInUserStr) : null, [loggedInUserStr]);
 
     useEffect(() => {
         window.scrollTo(0, 0);

@@ -10,7 +10,8 @@ const Feed = () => {
     const [loading, setLoading] = useState(true);
     const [feedType, setFeedType] = useState('following'); // 'following', 'trending', 'ai_picks'
 
-    const user = JSON.parse(localStorage.getItem('chilli_user'));
+    const userStr = localStorage.getItem('chilli_user');
+    const user = React.useMemo(() => userStr ? JSON.parse(userStr) : null, [userStr]);
 
     useEffect(() => {
         if (!user) {
