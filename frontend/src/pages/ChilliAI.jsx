@@ -177,13 +177,13 @@ const ChilliAI = () => {
     };
 
     return (
-        <div className="relative min-h-screen bg-transparent pt-20 pb-4 overflow-hidden flex flex-col font-sans">
+        <div className="relative min-h-[100dvh] bg-transparent pt-20 pb-4 overflow-hidden flex flex-col font-sans">
 
             {/* Background elements */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-rose-400/20 rounded-full blur-3xl -z-10 animate-blob"></div>
             <div className="absolute bottom-40 left-10 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl -z-10 animate-blob animation-delay-2000"></div>
 
-            <main className="flex-1 w-full max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 flex gap-4 xl:gap-6 relative h-[calc(100vh-80px)] sm:h-[calc(100vh-100px)] z-10">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 flex gap-4 xl:gap-6 relative h-[calc(100dvh-80px)] sm:h-[calc(100dvh-100px)] z-10">
 
                 {/* Glass Sidebar */}
                 <div
