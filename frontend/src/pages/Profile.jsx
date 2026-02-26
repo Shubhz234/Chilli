@@ -4,11 +4,20 @@ import { User, Mail, Calendar, Info, LogOut, Utensils, Heart, Edit2, Save } from
 
 const Profile = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const stored = localStorage.getItem('chilli_user');
+        return stored ? JSON.parse(stored) : null;
+    });
     const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState({});
+    const [editData, setEditData] = useState(() => {
+        const stored = localStorage.getItem('chilli_user');
+        return stored ? JSON.parse(stored) : {};
+    });
     const [uploadedRecipes, setUploadedRecipes] = useState([]);
-    const [savedRecipesData, setSavedRecipesData] = useState([]);
+    const [savedRecipesData] = useState(() => {
+        const savedFavorites = localStorage.getItem('chilli_favourites');
+        return savedFavorites ? JSON.parse(savedFavorites) : [];
+    });
 
     // Full Screen Modal States
     const [viewMode, setViewMode] = useState(null); // 'uploaded' | 'saved' | null
@@ -17,12 +26,7 @@ const Profile = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const storedUser = localStorage.getItem('chilli_user');
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            setEditData(parsedUser);
-
+        if (user) {
             const fetchUserData = async () => {
                 try {
                     // Fetch user's uploaded recipes
@@ -30,21 +34,18 @@ const Profile = () => {
                     if (res.ok) {
                         const allRecipes = await res.json();
                         setUploadedRecipes(allRecipes.filter(r =>
-                            (r.author && (r.author._id === parsedUser.id || r.author === parsedUser.id)) ||
-                            (parsedUser.isAdmin && !r.author)
+                            (r.author && (r.author._id === user.id || r.author === user.id)) ||
+                            (user.isAdmin && !r.author)
                         ));
                     }
                 } catch (err) { console.error(err); }
             };
             fetchUserData();
-
-            const savedFavorites = JSON.parse(localStorage.getItem('chilli_favourites') || '[]');
-            setSavedRecipesData(savedFavorites);
         } else {
             // Re-route to login if no user is found
             navigate('/login');
         }
-    }, [navigate]);
+    }, [navigate, user]);
 
     const handleLogout = () => {
         localStorage.removeItem('chilli_user');
@@ -89,7 +90,7 @@ const Profile = () => {
                 setAllUsers(await res.json());
             }
         } catch (err) {
-            console.error('Failed to load users for modal');
+            console.error('Failed to load users for modal', err);
         }
     };
 

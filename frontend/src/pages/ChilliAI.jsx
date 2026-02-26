@@ -39,7 +39,7 @@ const ChilliAI = () => {
                         setHistory(data.reverse());
                     }
                 } catch (err) {
-                    console.error("Error fetching history");
+                    console.error("Error fetching history", err);
                 }
             }
         };
@@ -97,7 +97,7 @@ const ChilliAI = () => {
                 }
             }
         } catch (err) {
-            console.error("Error deleting chat");
+            console.error("Error deleting chat", err);
         }
     };
 
@@ -165,6 +165,7 @@ const ChilliAI = () => {
                 }]);
             }
         } catch (error) {
+            console.error("Error starting chat", error);
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 type: 'ai',

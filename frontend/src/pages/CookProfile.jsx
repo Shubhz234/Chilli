@@ -53,7 +53,7 @@ const CookProfile = () => {
         };
 
         fetchData();
-    }, [id, navigate, loggedInUser?.id]);
+    }, [id, navigate, loggedInUser]);
 
     const handleFollowToggle = async () => {
         if (!loggedInUser) {
@@ -92,7 +92,7 @@ const CookProfile = () => {
                 setAllUsers(await res.json());
             }
         } catch (err) {
-            console.error('Failed to load users for modal');
+            console.error('Failed to load users for modal', err);
         }
     };
 

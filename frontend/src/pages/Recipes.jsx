@@ -28,12 +28,15 @@ const Recipes = () => {
         };
         fetchRecipes();
 
-        if (location.state?.category) {
-            setActiveCategory(location.state.category);
-        }
-        if (location.state?.searchTerm) {
-            setSearchTerm(location.state.searchTerm);
-        }
+        const updateStateFromLocation = () => {
+            if (location.state?.category) {
+                setActiveCategory(location.state.category);
+            }
+            if (location.state?.searchTerm) {
+                setSearchTerm(location.state.searchTerm);
+            }
+        };
+        updateStateFromLocation();
     }, [location.state]);
 
     const categories = ['All', 'Indian', 'Maharashtrian', 'Punjabi', 'South Indian', 'Gujarati', 'Bengal', 'Street Food', 'Italian', 'Chinese', 'Mexican', 'Thai', 'Japanese', 'American', 'Mediterranean', 'Main Course', 'Starter', 'Desserts', 'Breakfast', 'Snacks', 'Seafood', 'Healthy', 'Junk', 'Fat Lose', 'Weight Gain', 'Vegan', 'Quick & Easy'];

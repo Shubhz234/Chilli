@@ -121,7 +121,7 @@ const RecipeDetail = () => {
             const savedFavourites = JSON.parse(localStorage.getItem('chilli_favourites') || '[]');
             setIsFavourite(savedFavourites.some(r => r.id === recipe.id));
         }
-    }, [id, recipe?.id]);
+    }, [id, recipe]);
 
     const handleLikeToggle = async () => {
         if (!user) {
@@ -204,8 +204,6 @@ const RecipeDetail = () => {
     };
 
     const handleGenerateGroceryList = () => {
-        const text = `Grocery List for ${recipe.title}:\n\n` + recipe.ingredients.map(i => `[ ] ${i}`).join('\n');
-
         // Create a fake print window to download PDF/Print
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`

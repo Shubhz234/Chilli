@@ -86,6 +86,7 @@ const UploadRecipe = () => {
                 setMessage('Failed to submit recipe. Please try again.');
             }
         } catch (error) {
+            console.error(error);
             setMessage('Server error submitting recipe.');
         } finally {
             setIsSubmitting(false);

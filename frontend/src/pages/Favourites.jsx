@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import { Heart, Clock, Flame, Trash2, ArrowRight } from 'lucide-react';
 
 const Favourites = () => {
-    const [favouriteRecipes, setFavouriteRecipes] = useState([]);
+    const [favouriteRecipes, setFavouriteRecipes] = useState(() => {
+        const stored = localStorage.getItem('chilli_favourites');
+        return stored ? JSON.parse(stored) : [];
+    });
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const stored = localStorage.getItem('chilli_favourites');
-        if (stored) {
-            setFavouriteRecipes(JSON.parse(stored));
-        }
     }, []);
 
     const removeFavourite = (id) => {

@@ -8,11 +8,9 @@ const Navbar = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [user, setUser] = useState(null);
+    const [unreadCount, setUnreadCount] = useState(0);
     const location = useLocation();
     const navigate = useNavigate();
-
-    const [notifications, setNotifications] = useState([]);
-    const [unreadCount, setUnreadCount] = useState(0);
 
     React.useEffect(() => {
         const checkUser = () => {
@@ -40,26 +38,14 @@ const Navbar = () => {
                 const res = await fetch(`/api/users/${user.id}`);
                 if (res.ok) {
                     const data = await res.json();
-                    setNotifications((data.notifications || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
                     setUnreadCount((data.notifications || []).filter(n => !n.read).length);
                 }
-            } catch (err) { }
+            } catch (err) { console.error('Error fetching notifications', err); }
         };
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 15000);
         return () => clearInterval(interval);
     }, [user?.id]);
-
-    const handleMarkRead = async () => {
-        if (!user?.id) return;
-        try {
-            await fetch(`/api/users/${user.id}/notifications/read`, { method: 'PUT' });
-            setNotifications(notifications.map(n => ({ ...n, read: true })));
-            setUnreadCount(0);
-        } catch (e) {
-            console.error(e);
-        }
-    };
 
     const baseNavLinks = [
         { name: 'Home', path: '/' },

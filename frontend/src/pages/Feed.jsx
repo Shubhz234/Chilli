@@ -68,7 +68,7 @@ const Feed = () => {
 
         fetchFeed();
         fetchUsers();
-    }, [feedType, navigate, user?.id]);
+    }, [feedType, navigate, user]);
 
     if (!user) return null;
 
@@ -129,7 +129,7 @@ const Feed = () => {
                                 </Link>
                             )}
 
-                            {usersList.filter(u => !u.isAdmin).slice(0, 10).map((u, i) => (
+                            {usersList.filter(u => !u.isAdmin).slice(0, 10).map((u) => (
                                 <Link to={`/user/${u._id}`} key={u._id} className="snap-start shrink-0 w-32 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center hover:border-primary-200 transition-colors text-center group">
                                     <img src={u.profilePhoto || "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix"} alt={u.name} className="w-14 h-14 object-cover rounded-full mb-3 border-2 border-gray-100 group-hover:scale-105 transition-transform" />
                                     <h3 className="font-bold text-gray-900 text-sm mb-1 leading-tight flex items-center gap-1 justify-center relative">
