@@ -248,16 +248,16 @@ export const likeRecipe = async (req, res) => {
 
         const recipe = await Recipe.findById(req.params.id);
         if (recipe) {
-            const index = recipe.likes.findIndex(id => id.toString() === userId.toString());
+            // Use strict Set string conversion to guarantee no duplicates
+            const uniqueLikes = new Set(recipe.likes.map(id => id.toString()));
 
-            if (index === -1) {
-                // Like
-                recipe.likes.push(userId);
+            if (uniqueLikes.has(userId.toString())) {
+                uniqueLikes.delete(userId.toString()); // Unlike
             } else {
-                // Unlike
-                recipe.likes.splice(index, 1);
+                uniqueLikes.add(userId.toString()); // Like
             }
 
+            recipe.likes = Array.from(uniqueLikes);
             await recipe.save();
             res.json({ message: 'Like status toggled', likes: recipe.likes });
         } else {

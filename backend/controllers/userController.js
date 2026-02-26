@@ -58,6 +58,18 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        if (user.isBlocked) {
+            return res.status(403).json({ message: 'Your account has been blocked by the admin.' });
+        }
+
+        // Capture Login Info
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown IP';
+        const device = req.headers['user-agent'] || 'Unknown Device';
+        user.loginHistory.push({ ip, device, time: new Date() });
+        // Keep only last 10 logins
+        if (user.loginHistory.length > 10) user.loginHistory.shift();
+        await user.save();
+
         const token = jwt.sign({ id: user._id, isAdmin: user.isAdmin }, process.env.JWT_SECRET || 'chilli_secret_123', { expiresIn: '30d' });
 
         res.json({
@@ -122,11 +134,13 @@ export const followUser = async (req, res) => {
         const currentUser = await User.findById(currentUserId);
 
         if (userToFollow && currentUser) {
-            // Use string comparison for ObjectIds to accurately determine if already following
-            const isAlreadyFollower = userToFollow.followers.some(id => id.toString() === currentUserId.toString());
+            // Use strict String conversion Set logic to guarantee no duplicate Fake Follower logic
+            const uniqueFollowers = new Set(userToFollow.followers.map(id => id.toString()));
+            const isAlreadyFollower = uniqueFollowers.has(currentUserId.toString());
 
             if (!isAlreadyFollower) {
-                userToFollow.followers.push(currentUserId);
+                uniqueFollowers.add(currentUserId.toString());
+                userToFollow.followers = Array.from(uniqueFollowers);
 
                 // Add notification
                 userToFollow.notifications.push({
@@ -138,9 +152,12 @@ export const followUser = async (req, res) => {
                 await userToFollow.save();
             }
 
-            const isAlreadyFollowing = currentUser.following.some(id => id.toString() === req.params.id.toString());
+            const uniqueFollowing = new Set(currentUser.following.map(id => id.toString()));
+            const isAlreadyFollowing = uniqueFollowing.has(req.params.id.toString());
+
             if (!isAlreadyFollowing) {
-                currentUser.following.push(req.params.id);
+                uniqueFollowing.add(req.params.id.toString());
+                currentUser.following = Array.from(uniqueFollowing);
                 await currentUser.save();
             }
             res.json({ message: 'Successfully followed user' });
@@ -164,10 +181,15 @@ export const unfollowUser = async (req, res) => {
         const currentUser = await User.findById(currentUserId);
 
         if (userToUnfollow && currentUser) {
-            userToUnfollow.followers = userToUnfollow.followers.filter(id => id.toString() !== currentUserId.toString());
+            // Filter and guarantee uniqueness
+            userToUnfollow.followers = Array.from(new Set(userToUnfollow.followers
+                .map(id => id.toString())
+                .filter(id => id !== currentUserId.toString())));
             await userToUnfollow.save();
 
-            currentUser.following = currentUser.following.filter(id => id.toString() !== req.params.id.toString());
+            currentUser.following = Array.from(new Set(currentUser.following
+                .map(id => id.toString())
+                .filter(id => id !== req.params.id.toString())));
             await currentUser.save();
 
             res.json({ message: 'Successfully unfollowed user' });
@@ -272,5 +294,40 @@ export const markNotificationsAsRead = async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Server error marking notifications read', error: error.message });
+    }
+};
+
+// @desc    Delete a user
+// @route   DELETE /api/users/:id
+// @access  Public (in real app, should be Admin only)
+export const deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (user) {
+            await user.deleteOne();
+            res.json({ message: 'User removed completely' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error deleting user', error: error.message });
+    }
+};
+
+// @desc    Block / Unblock a user
+// @route   PUT /api/users/:id/block
+// @access  Public (Admin only in real app)
+export const toggleBlockUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (user) {
+            user.isBlocked = !user.isBlocked;
+            const updatedUser = await user.save();
+            res.json({ message: user.isBlocked ? 'User blocked' : 'User unblocked', isBlocked: updatedUser.isBlocked });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error toggling block status', error: error.message });
     }
 };

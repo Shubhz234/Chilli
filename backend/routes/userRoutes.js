@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginUser, registerUser, updateUserProfile, getUserProfile, followUser, unfollowUser, getUsers, verifyUser, markNotificationsAsRead } from '../controllers/userController.js';
+import { loginUser, registerUser, updateUserProfile, getUserProfile, followUser, unfollowUser, getUsers, verifyUser, markNotificationsAsRead, deleteUser, toggleBlockUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
@@ -8,6 +8,8 @@ router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.put('/profile/:id', updateUserProfile);
 router.put('/:id/verify', verifyUser);
+router.put('/:id/block', toggleBlockUser);
+router.delete('/:id', deleteUser);
 router.get('/:id', getUserProfile);
 router.post('/:id/follow', followUser);
 router.post('/:id/unfollow', unfollowUser);

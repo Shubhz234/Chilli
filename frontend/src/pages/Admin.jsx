@@ -16,6 +16,7 @@ const Admin = () => {
     const [activeTab, setActiveTab] = useState('approved'); // 'approved', 'pending', 'users'
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null, payload: null });
     const [rejectReason, setRejectReason] = useState('');
+    const [userDetails, setUserDetails] = useState(null);
 
     const [formData, setFormData] = useState({
         id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '',
@@ -236,6 +237,31 @@ const Admin = () => {
         }
     };
 
+    const handleToggleBlockUser = async (id) => {
+        try {
+            const res = await fetch(`/api/users/${id}/block`, { method: 'PUT' });
+            if (res.ok) {
+                const data = await res.json();
+                setUsersList(usersList.map(u => u._id === id ? { ...u, isBlocked: data.isBlocked } : u));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeleteUser = async (id) => {
+        if (window.confirm("WARNING: Are you sure you want to completely delete this user and all data?")) {
+            try {
+                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setUsersList(usersList.filter(u => u._id !== id));
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    };
+
     const handleApprove = async (id) => {
         try {
             const res = await fetch(`/api/recipes/${id}`, {
@@ -265,24 +291,33 @@ const Admin = () => {
                         <p className="text-gray-600">Manage your recipes and platform content.</p>
                     </div>
 
-                    <button
-                        onClick={() => {
-                            if (showForm) {
-                                setShowForm(false);
-                                setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '', region: 'Global', dietType: 'Any', calories: 0, protein: 0, carbs: 0, fat: 0 });
-                            } else {
-                                setShowForm(true);
-                            }
-                        }}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold shadow-lg hover:bg-gray-800 transition-colors"
-                    >
-                        {showForm ? 'Cancel' : (
-                            <>
-                                <Plus className="w-5 h-5" />
-                                Add New Recipe
-                            </>
-                        )}
-                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => {
+                                if (showForm) {
+                                    setShowForm(false);
+                                    setFormData({ id: null, title: '', category: 'Main Course', time: '', difficulty: 'Medium', servings: 4, image: '', videoUrl: '', description: '', ingredients: '', steps: '', region: 'Global', dietType: 'Any', calories: 0, protein: 0, carbs: 0, fat: 0 });
+                                } else {
+                                    setShowForm(true);
+                                }
+                            }}
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold shadow-lg hover:bg-gray-800 transition-colors"
+                        >
+                            {showForm ? 'Cancel' : (
+                                <>
+                                    <Plus className="w-5 h-5" />
+                                    Add New Recipe
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={() => navigate('/login')} // Admin can technically add users by registering them
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-primary-600 border border-primary-200 rounded-xl font-semibold shadow-lg hover:bg-primary-50 transition-colors"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add User
+                        </button>
+                    </div>
                 </div>
 
                 {/* Add/Edit Recipe Form */}
@@ -581,12 +616,23 @@ const Admin = () => {
                                                 )}
                                             </td>
                                             <td className="p-4 text-right">
-                                                <button
-                                                    onClick={() => handleVerifyUser(u._id)}
-                                                    className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors ${u.isVerified ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
-                                                >
-                                                    {u.isVerified ? 'Remove Verification' : 'Verify Cook'}
-                                                </button>
+                                                <div className="flex justify-end gap-2 flex-wrap">
+                                                    <button onClick={() => setUserDetails(u)} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors bg-blue-50 text-blue-700 hover:bg-blue-100">
+                                                        View Data
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleVerifyUser(u._id)}
+                                                        className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${u.isVerified ? 'bg-orange-50 text-orange-600 hover:bg-orange-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}
+                                                    >
+                                                        {u.isVerified ? 'Unverify' : 'Verify'}
+                                                    </button>
+                                                    <button onClick={() => handleToggleBlockUser(u._id)} className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors ${u.isBlocked ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'}`}>
+                                                        {u.isBlocked ? 'Unblock' : 'Block'}
+                                                    </button>
+                                                    <button onClick={() => handleDeleteUser(u._id)} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors bg-red-100 text-red-700 hover:bg-red-200">
+                                                        Del
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -734,6 +780,55 @@ const Admin = () => {
                                 {confirmModal.type === 'edit' && 'Yes, Edit'}
                                 {confirmModal.type === 'reject' && 'Yes, Reject'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Details Modal */}
+            {userDetails && (
+                <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in px-4" onClick={() => setUserDetails(null)}>
+                    <div className="liquid-card p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto transform transition-transform border border-white/40" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                            <h3 className="text-2xl font-bold text-gray-900">User Data Report: {userDetails.name}</h3>
+                            <button onClick={() => setUserDetails(null)} className="text-gray-400 hover:text-gray-800 font-bold">X</button>
+                        </div>
+
+                        <div className="space-y-4 text-sm text-gray-700 mb-6">
+                            <p><strong className="text-gray-900">Email:</strong> {userDetails.email}</p>
+                            <p><strong className="text-gray-900">ID:</strong> {userDetails._id}</p>
+                            <p><strong className="text-gray-900">Blocked:</strong> {userDetails.isBlocked ? <span className="text-rose-600 font-bold">YES</span> : 'NO'}</p>
+                            <p><strong className="text-gray-900">Verified:</strong> {userDetails.isVerified ? 'YES' : 'NO'}</p>
+                            <p><strong className="text-gray-900">Followers:</strong> {userDetails.followers?.length || 0}</p>
+                            <p><strong className="text-gray-900">Signed Up / Created At:</strong> {new Date(userDetails.createdAt).toLocaleString()}</p>
+                        </div>
+
+                        <h4 className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded inline-block mb-3">Login Security History</h4>
+                        {userDetails.loginHistory && userDetails.loginHistory.length > 0 ? (
+                            <table className="w-full text-left text-xs text-gray-600 border border-gray-200 rounded">
+                                <thead className="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th className="p-2">Time</th>
+                                        <th className="p-2">IP Address</th>
+                                        <th className="p-2">Device Info</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {[...userDetails.loginHistory].reverse().map((log, i) => (
+                                        <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                                            <td className="p-2 whitespace-nowrap">{new Date(log.time).toLocaleString()}</td>
+                                            <td className="p-2 font-mono text-gray-500">{log.ip}</td>
+                                            <td className="p-2 truncate max-w-[120px]" title={log.device}>{log.device}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p className="text-sm text-gray-500 italic border p-4 rounded bg-gray-50">No login history recorded yet.</p>
+                        )}
+
+                        <div className="mt-6 flex justify-end">
+                            <button onClick={() => setUserDetails(null)} className="px-6 py-2 bg-gray-900 text-white rounded-xl font-bold shadow-md hover:bg-gray-800">Close</button>
                         </div>
                     </div>
                 </div>

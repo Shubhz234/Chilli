@@ -27,7 +27,13 @@ const userSchema = new mongoose.Schema({
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     savedRecipes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' }],
-    notifications: [notificationSchema]
+    notifications: [notificationSchema],
+    isBlocked: { type: Boolean, default: false },
+    loginHistory: [{
+        ip: String,
+        time: { type: Date, default: Date.now },
+        device: String
+    }]
 }, {
     timestamps: true
 });
