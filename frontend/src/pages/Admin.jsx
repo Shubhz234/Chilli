@@ -209,6 +209,15 @@ const Admin = () => {
             } catch (err) {
                 console.error("Reject error", err);
             }
+        } else if (confirmModal.type === 'delete_user') {
+            try {
+                const res = await fetch(`/api/users/${confirmModal.payload}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setUsersList(usersList.filter(u => u._id !== confirmModal.payload));
+                }
+            } catch (err) {
+                console.error("Delete user error", err);
+            }
         }
         setConfirmModal({ isOpen: false, type: null, payload: null });
     };
@@ -250,16 +259,7 @@ const Admin = () => {
     };
 
     const handleDeleteUser = async (id) => {
-        if (window.confirm("WARNING: Are you sure you want to completely delete this user and all data?")) {
-            try {
-                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    setUsersList(usersList.filter(u => u._id !== id));
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
+        setConfirmModal({ isOpen: true, type: 'delete_user', payload: id });
     };
 
     const handleApprove = async (id) => {
@@ -747,6 +747,7 @@ const Admin = () => {
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">Are you sure?</h3>
                             <p className="text-gray-600">
                                 {confirmModal.type === 'delete' && "This action cannot be undone. Are you sure you want to permanently delete this recipe?"}
+                                {confirmModal.type === 'delete_user' && "This action cannot be undone. Are you sure you want to completely delete this user and all their data?"}
                                 {confirmModal.type === 'edit' && "You are about to edit this recipe's details. Proceed?"}
                                 {confirmModal.type === 'reset_ratings' && "Are you sure you want to reset and permanently delete ALL ratings and reviews for this recipe? This cannot be undone."}
                                 {confirmModal.type === 'reject' && "Provide a reason for rejecting this recipe. The author will be notified."}
@@ -770,12 +771,13 @@ const Admin = () => {
                             </button>
                             <button
                                 onClick={executeConfirmAction}
-                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete' || confirmModal.type === 'reset_ratings' || confirmModal.type === 'reject'
+                                className={`px-5 py-2.5 text-white rounded-xl font-semibold transition-colors shadow-lg ${confirmModal.type === 'delete' || confirmModal.type === 'delete_user' || confirmModal.type === 'reset_ratings' || confirmModal.type === 'reject'
                                     ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/30'
                                     : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
                                     }`}
                             >
                                 {confirmModal.type === 'delete' && 'Yes, Delete'}
+                                {confirmModal.type === 'delete_user' && 'Yes, Delete User'}
                                 {confirmModal.type === 'reset_ratings' && 'Yes, Reset Ratings'}
                                 {confirmModal.type === 'edit' && 'Yes, Edit'}
                                 {confirmModal.type === 'reject' && 'Yes, Reject'}
