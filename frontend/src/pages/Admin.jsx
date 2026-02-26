@@ -99,8 +99,13 @@ const Admin = () => {
                 if (res.ok) {
                     const updatedRecipe = await res.json();
                     const formattedRecipe = { ...updatedRecipe, id: updatedRecipe._id.toString() };
-                    const updatedList = recipes.map(r => r.id === formData.id ? formattedRecipe : r);
-                    saveAndSync(updatedList);
+
+                    if (updatedRecipe.status === 'pending') {
+                        setPendingRecipes(pendingRecipes.map(r => r.id === formData.id ? formattedRecipe : r));
+                    } else {
+                        const updatedList = recipes.map(r => r.id === formData.id ? formattedRecipe : r);
+                        saveAndSync(updatedList);
+                    }
                 }
             } catch (err) {
                 console.error("Update error", err);
@@ -151,6 +156,7 @@ const Admin = () => {
                     method: 'DELETE'
                 });
                 saveAndSync(recipes.filter(r => r.id !== confirmModal.payload));
+                setPendingRecipes(pendingRecipes.filter(r => r.id !== confirmModal.payload));
             } catch (err) {
                 console.error("Delete error", err);
             }
@@ -186,6 +192,7 @@ const Admin = () => {
                     const data = await res.json();
                     const formattedRecipe = { ...data.recipe, id: data.recipe._id.toString() };
                     saveAndSync(recipes.map(r => r.id === confirmModal.payload ? formattedRecipe : r));
+                    setPendingRecipes(pendingRecipes.map(r => r.id === confirmModal.payload ? formattedRecipe : r));
                 }
             } catch (err) {
                 console.error("Reset ratings error", err);

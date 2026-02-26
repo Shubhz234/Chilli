@@ -78,7 +78,9 @@ export const createRecipe = async (req, res) => {
         });
 
         const createdRecipe = await recipe.save();
-        res.status(201).json(createdRecipe);
+        await createdRecipe.populate('author', 'name profilePhoto followers');
+        const mappedRecipe = { ...createdRecipe._doc, id: createdRecipe._id.toString() };
+        res.status(201).json(mappedRecipe);
     } catch (error) {
         res.status(400).json({ message: 'Invalid recipe data', error: error.message });
     }
@@ -130,7 +132,9 @@ export const updateRecipe = async (req, res) => {
             if (steps) recipe.steps = steps;
 
             const updatedRecipe = await recipe.save();
-            res.json(updatedRecipe);
+            await updatedRecipe.populate('author', 'name profilePhoto followers');
+            const mappedRecipe = { ...updatedRecipe._doc, id: updatedRecipe._id.toString() };
+            res.json(mappedRecipe);
         } else {
             res.status(404).json({ message: 'Recipe not found' });
         }
